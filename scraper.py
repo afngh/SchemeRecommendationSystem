@@ -120,11 +120,11 @@ def scrape_india_gov_schemes(category_id, category_name, max_pages=3):
 if __name__ == "__main__":
     print("Starting the web scraper...")
     
-    # Configuration for the new category: Travel & Tourism
-    category_id = '6'
-    category_name = 'Travel%20%26%20Tourism'
-    num_pages_to_scrape = 10
-    csv_filename = "travel_tourism_schemes.csv"
+    # Configuration for the new category: Welfare of Families
+    category_id = '4'
+    category_name = 'Welfare%20of%20Families'
+    num_pages_to_scrape = 53
+    csv_filename = "welfare_of_families_schemes.csv"
     
     df_schemes = scrape_india_gov_schemes(category_id, category_name, max_pages=num_pages_to_scrape)
     
