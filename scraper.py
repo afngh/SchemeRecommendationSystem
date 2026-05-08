@@ -120,11 +120,11 @@ def scrape_india_gov_schemes(category_id, category_name, max_pages=3):
 if __name__ == "__main__":
     print("Starting the web scraper...")
     
-    # Configuration for the new category: Housing & Local services
-    category_id = '3'
-    category_name = 'Housing%20%26%20Local%20services'
-    num_pages_to_scrape = 15
-    csv_filename = "housing_local_services_schemes.csv"
+    # Configuration for the new category: Jobs
+    category_id = '2'
+    category_name = 'Jobs'
+    num_pages_to_scrape = 45
+    csv_filename = "jobs_schemes.csv"
     
     df_schemes = scrape_india_gov_schemes(category_id, category_name, max_pages=num_pages_to_scrape)
     
