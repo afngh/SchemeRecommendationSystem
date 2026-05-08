@@ -1,0 +1,35 @@
+# SchemeLens Task List
+
+## Phase 1: Data Processing & Database Setup
+- [x] Consolidate all scraped CSVs into a single master dataset.
+- [x] Clean the dataset (handle missing data, remove duplicates, normalize text).
+- [x] Assign unique `Scheme_ID`s to each scheme.
+- [x] Initialize an SQLite database (`schemelens.db`).
+- [x] Create database tables for storing scheme data and user ratings/feedback.
+
+## Phase 2: AI & NLP Engine
+- [x] Set up vector database (FAISS/ChromaDB).
+- [x] Generate and store vector embeddings for all schemes using sentence-transformers.
+- [x] Implement query matching logic to find relevant schemes from natural language input.
+
+## Phase 3: Backend API Development
+- [x] Choose and set up backend framework (FastAPI).
+- [x] Create `/recommend` endpoint for AI matching.
+- [x] Create `/rate` endpoint for saving user feedback.
+- [x] Create `/top-rated` endpoint for analytics.
+
+## Phase 4: Frontend Development
+- [ ] Build responsive web interface.
+- [ ] Implement search bar for natural language queries.
+- [ ] Implement scheme cards with 5-star rating widget.
+- [ ] Implement feedback modal.
+
+## Phase 5: Field Survey
+- [ ] Draft questionnaire for farmers, students, and low-income groups.
+- [ ] Create digital form for recording responses.
+
+## Phase 6: Government Policy Risk Engine
+- [x] Write `government_risk_analyzer.py` implementing the 5 risk algorithms.
+- [x] Create `government_risk_analysis` database table.
+- [ ] Add API endpoint for fetching high-risk schemes.
+- [ ] Build the Government Dashboard UI.
