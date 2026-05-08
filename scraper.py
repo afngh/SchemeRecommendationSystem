@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-def scrape_india_gov_schemes(max_pages=91):
+def scrape_india_gov_schemes(category_id, category_name, max_pages=3):
     """
     Scrapes scheme data from india.gov.in using Selenium to handle dynamic rendering.
     Returns a pandas DataFrame.
@@ -36,7 +36,7 @@ def scrape_india_gov_schemes(max_pages=91):
             print(f"Fetching page {page}...")
             
             # The URL with parameters
-            url = f"https://www.india.gov.in/my-government/schemes/search?schemeCategory=12&schemeCategoryName=Agriculture%2C+Rural+%26+Environment&pagenumber={page}"
+            url = f"https://www.india.gov.in/my-government/schemes/search?schemeCategory={category_id}&schemeCategoryName={category_name}&pagenumber={page}"
             
             driver.get(url)
             
@@ -119,14 +119,18 @@ def scrape_india_gov_schemes(max_pages=91):
 
 if __name__ == "__main__":
     print("Starting the web scraper...")
-    # Change max_pages here to scrape more or fewer pages (e.g., set to 3 as requested)
-    num_pages_to_scrape = 91
-    df_schemes = scrape_india_gov_schemes(max_pages=num_pages_to_scrape)
+    
+    # Configuration for the new category: Benefits & Social development
+    category_id = '8'
+    category_name = 'Benefits%20%26%20Social%20development'
+    num_pages_to_scrape = 159
+    csv_filename = "benefits_social_schemes.csv"
+    
+    df_schemes = scrape_india_gov_schemes(category_id, category_name, max_pages=num_pages_to_scrape)
     
     # Check if data was collected
     if not df_schemes.empty:
         # Save the DataFrame to a CSV file
-        csv_filename = "agriculture_schemes.csv"
         df_schemes.to_csv(csv_filename, index=False, encoding='utf-8')
         
         print(f"\nSuccessfully scraped {len(df_schemes)} schemes.")
