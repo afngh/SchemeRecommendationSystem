@@ -120,7 +120,7 @@ def scrape_india_gov_schemes(max_pages=91):
 if __name__ == "__main__":
     print("Starting the web scraper...")
     # Change max_pages here to scrape more or fewer pages (e.g., set to 3 as requested)
-    num_pages_to_scrape = 3
+    num_pages_to_scrape = 91
     df_schemes = scrape_india_gov_schemes(max_pages=num_pages_to_scrape)
     
     # Check if data was collected
