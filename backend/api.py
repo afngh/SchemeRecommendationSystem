@@ -46,14 +46,31 @@ def read_root():
 @app.post("/api/recommend")
 def recommend(request: QueryRequest):
     """
-    Takes a natural language query and returns the best matching schemes using AI.
+    Takes a natural language query, enhances it using Gemini LLM,
+    then returns the best matching schemes via FAISS semantic search.
     """
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
         
     try:
-        recommendations = engine.recommend_schemes(request.query, top_k=request.top_k)
-        return {"query": request.query, "results": recommendations}
+        # Get the enhanced query if enhancer is available
+        enhanced_query = None
+        if engine.enhancer:
+            enhanced_query = engine.enhancer.enhance(request.query)
+
+        # Pass enhanced_query to avoid double LLM call
+        recommendations = engine.recommend_schemes(
+            request.query, 
+            top_k=request.top_k,
+            enhanced_query=enhanced_query
+        )
+
+        return {
+            "query": request.query,
+            "enhanced_query": enhanced_query,
+            "enhancer_active": engine.enhancer is not None,
+            "results": recommendations
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

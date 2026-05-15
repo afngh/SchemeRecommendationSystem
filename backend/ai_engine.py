@@ -6,6 +6,13 @@ import pickle
 from sentence_transformers import SentenceTransformer
 import faiss
 
+# Prompt Enhancer (Gemini + LangChain)
+try:
+    from prompt_enhancer import PromptEnhancer
+    ENHANCER_AVAILABLE = True
+except ImportError:
+    ENHANCER_AVAILABLE = False
+
 # Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'schemelens.db')
@@ -20,6 +27,16 @@ class AIEngine:
         self.model = SentenceTransformer(MODEL_NAME)
         self.index = None
         self.id_mapping = None
+
+        # Initialize the Gemini Prompt Enhancer
+        self.enhancer = None
+        if ENHANCER_AVAILABLE:
+            try:
+                self.enhancer = PromptEnhancer()
+                print("✅ Gemini Prompt Enhancer loaded successfully.")
+            except Exception as e:
+                print(f"⚠️  Prompt Enhancer not available ({e}). Using raw queries.")
+                self.enhancer = None
 
     def _get_db_connection(self):
         conn = sqlite3.connect(DB_PATH)
@@ -82,16 +99,32 @@ class AIEngine:
             with open(ID_MAPPING_PATH, 'rb') as f:
                 self.id_mapping = pickle.load(f)
 
-    def recommend_schemes(self, user_query, top_k=5):
+    def recommend_schemes(self, user_query, top_k=5, enhanced_query=None):
         """
         Takes a natural language query from a user and returns the top matching schemes.
+        Uses Gemini LLM to enhance the query before semantic search for better results.
+        
+        Args:
+            user_query: The raw user query.
+            top_k: Number of results to return.
+            enhanced_query: Pre-enhanced query from the API layer (avoids double enhancement).
         """
         if self.index is None or self.id_mapping is None:
             self.load_vector_db()
 
         print(f"\nAnalyzing user query: '{user_query}'...")
-        # Convert the user's natural language query into a vector
-        query_vector = self.model.encode([user_query])
+
+        # --- PROMPT ENHANCEMENT STEP ---
+        # Use pre-enhanced query if provided, otherwise enhance here
+        if enhanced_query:
+            search_query = enhanced_query
+        elif self.enhancer:
+            search_query = self.enhancer.enhance(user_query)
+        else:
+            search_query = user_query
+
+        # Convert the (enhanced) query into a vector for semantic search
+        query_vector = self.model.encode([search_query])
         
         # Search the FAISS index for the closest matching scheme vectors
         distances, indices = self.index.search(np.array(query_vector).astype('float32'), top_k)
