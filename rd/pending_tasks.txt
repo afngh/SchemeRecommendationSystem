@@ -31,5 +31,8 @@
 ## Phase 6: Government Policy Risk Engine
 - [x] Write `government_risk_analyzer.py` implementing the 5 risk algorithms.
 - [x] Create `government_risk_analysis` database table.
-- [ ] Add API endpoint for fetching high-risk schemes.
+- [x] Add tag-based risk search feature (CLI).
+- [x] Add API endpoint for fetching high-risk schemes (`GET /api/gov/risky-schemes`).
+- [x] Add API endpoint for tag-based risk search (`POST /api/gov/risky-schemes/search`).
+- [x] Add API endpoint for risk summary stats (`GET /api/gov/risk-summary`).
 - [ ] Build the Government Dashboard UI.

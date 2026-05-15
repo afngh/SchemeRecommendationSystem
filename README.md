@@ -263,6 +263,134 @@ curl http://127.0.0.1:8000/api/top-rated?limit=10
 
 ---
 
+### `GET /api/gov/risky-schemes` — Top Risky Schemes
+
+Fetch the most dangerous schemes sorted by composite risk score. Supports category filtering and minimum risk threshold.
+
+**Query Parameters:**
+
+| Param      | Type   | Required | Default | Description                                  |
+|------------|--------|----------|---------|----------------------------------------------|
+| `category` | string | ❌       | all     | Filter by category (e.g., `Agriculture`)     |
+| `limit`    | int    | ❌       | 20      | Number of results                            |
+| `min_risk` | float  | ❌       | 0.0     | Minimum composite risk score threshold       |
+
+**Response:**
+```json
+{
+  "filter": { "category": "Agriculture", "min_risk": 2.0, "limit": 5 },
+  "total_results": 2,
+  "risky_schemes": [
+    {
+      "scheme_id": "2ed2bbcd",
+      "title": "Goat Rearing Scheme",
+      "category": "Agriculture",
+      "tags": "Women, BPL, Disability, Scheduled Tribe, Farmer",
+      "link": "...",
+      "accessibility_risk": 0.0,
+      "bureaucratic_risk": 0.0,
+      "market_distortion_risk": 7.0,
+      "ecological_risk": 1.0,
+      "social_friction_risk": 6.0,
+      "composite_risk_score": 2.8
+    }
+  ]
+}
+```
+
+**cURL:**
+```bash
+# All categories, top 10
+curl "http://127.0.0.1:8000/api/gov/risky-schemes?limit=10"
+
+# Agriculture only, minimum risk 2.0
+curl "http://127.0.0.1:8000/api/gov/risky-schemes?category=Agriculture&min_risk=2.0&limit=5"
+```
+
+---
+
+### `POST /api/gov/risky-schemes/search` — Tag-Based Risk Search
+
+Search for risky schemes matching specific tags (e.g., "education, women", "agriculture rural subsidy").
+
+**Request Body:**
+```json
+{
+  "tags": "education, women",
+  "top_n": 5
+}
+```
+
+| Field   | Type   | Required | Default | Description                               |
+|---------|--------|----------|---------|-------------------------------------------|
+| `tags`  | string | ✅       | —       | Comma or space separated search tags      |
+| `top_n` | int    | ❌       | 10      | Number of results to return               |
+
+**Response:**
+```json
+{
+  "tags": "education, women",
+  "total_results": 5,
+  "risky_schemes": [
+    {
+      "scheme_id": "c20b303b",
+      "title": "Sukhad Sahara Yojana",
+      "category": "Benefits Social",
+      "description": "...",
+      "tags": "Widow, Deserted Woman, BPL, Financial Assistance",
+      "composite_risk_score": 3.2,
+      "tag_relevance": 1
+    }
+  ]
+}
+```
+
+**cURL:**
+```bash
+curl -X POST http://127.0.0.1:8000/api/gov/risky-schemes/search \
+  -H "Content-Type: application/json" \
+  -d '{"tags": "agriculture, rural, subsidy", "top_n": 5}'
+```
+
+---
+
+### `GET /api/gov/risk-summary` — Aggregate Risk Statistics
+
+Returns overall risk stats and per-category breakdown with high/medium/low risk counts.
+
+**Response:**
+```json
+{
+  "overall": {
+    "total_schemes": 4580,
+    "overall_avg_risk": 1.34,
+    "overall_max_risk": 3.3,
+    "total_high_risk": 8,
+    "total_medium_risk": 670,
+    "total_low_risk": 3902
+  },
+  "by_category": [
+    {
+      "category": "Justice Law Grievances",
+      "total_schemes": 12,
+      "avg_risk": 1.67,
+      "max_risk": 2.4,
+      "min_risk": 0.6,
+      "high_risk_count": 0,
+      "medium_risk_count": 4,
+      "low_risk_count": 8
+    }
+  ]
+}
+```
+
+**cURL:**
+```bash
+curl http://127.0.0.1:8000/api/gov/risk-summary
+```
+
+---
+
 ## 🏛️ Government Risk Analyzer (CLI)
 
 A separate CLI tool for government officials to analyze policy risks.
@@ -295,20 +423,26 @@ python government_risk_analyzer.py
 ## 🧠 Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                   Frontend (TBD)                    │
-└────────────────────────┬────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│                     Frontend (TBD)                      │
+└────────────────────────┬────────────────────────────────┘
                          │
                     HTTP Requests
                          │
-┌────────────────────────▼────────────────────────────┐
-│                  api.py (FastAPI)                    │
-│                                                     │
-│  /api/recommend          → Normal FAISS search      │
-│  /api/recommend/premium  → Gemini + FAISS search    │
-│  /api/rate               → Save user feedback       │
-│  /api/top-rated          → Fetch top rated schemes  │
-└──────┬──────────────────────────────┬───────────────┘
+┌────────────────────────▼────────────────────────────────┐
+│                  api.py (FastAPI)                        │
+│                                                         │
+│  CITIZEN ENDPOINTS:                                     │
+│  /api/recommend            → Normal FAISS search        │
+│  /api/recommend/premium    → Gemini + FAISS search      │
+│  /api/rate                 → Save user feedback         │
+│  /api/top-rated            → Fetch top rated schemes    │
+│                                                         │
+│  GOVERNMENT ENDPOINTS:                                  │
+│  /api/gov/risky-schemes        → Top risky schemes      │
+│  /api/gov/risky-schemes/search → Tag-based risk search  │
+│  /api/gov/risk-summary         → Aggregate risk stats   │
+└──────┬──────────────────────────────┬───────────────────┘
        │                              │
        ▼                              ▼
 ┌──────────────┐        ┌─────────────────────────┐
