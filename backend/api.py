@@ -44,23 +44,58 @@ def read_root():
     return {"message": "Welcome to SchemeLens AI API. Use /docs to see all endpoints."}
 
 @app.post("/api/recommend")
-def recommend(request: QueryRequest):
+def recommend_normal(request: QueryRequest):
     """
-    Takes a natural language query, enhances it using Gemini LLM,
-    then returns the best matching schemes via FAISS semantic search.
+    NORMAL SEARCH (Free / Regular Users)
+    Takes a natural language query and runs direct FAISS semantic search
+    using the raw query — no LLM enhancement.
     """
     if not request.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty.")
         
     try:
-        # Get the enhanced query if enhancer is available
+        # Direct FAISS search with the raw query (no Gemini enhancement)
+        recommendations = engine.recommend_schemes(
+            request.query,
+            top_k=request.top_k,
+            enhanced_query=request.query  # Pass raw query to skip internal enhancement
+        )
+
+        return {
+            "query": request.query,
+            "search_type": "normal",
+            "results": recommendations
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/recommend/premium")
+def recommend_premium(request: QueryRequest):
+    """
+    PREMIUM SEMANTIC SEARCH (Premium Users)
+    Enhances the query using Gemini LLM via LangChain to extract intent,
+    demographics, and policy keywords — then runs FAISS semantic search
+    with the enriched context for significantly better results.
+    """
+    if not request.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty.")
+        
+    try:
+        # Step 1: Enhance the query using Gemini LLM
         enhanced_query = None
         if engine.enhancer:
             enhanced_query = engine.enhancer.enhance(request.query)
+        
+        if not enhanced_query:
+            raise HTTPException(
+                status_code=503,
+                detail="Premium search is temporarily unavailable. Gemini API key may not be configured."
+            )
 
-        # Pass enhanced_query to avoid double LLM call
+        # Step 2: FAISS semantic search with the enhanced query
         recommendations = engine.recommend_schemes(
-            request.query, 
+            request.query,
             top_k=request.top_k,
             enhanced_query=enhanced_query
         )
@@ -68,9 +103,11 @@ def recommend(request: QueryRequest):
         return {
             "query": request.query,
             "enhanced_query": enhanced_query,
-            "enhancer_active": engine.enhancer is not None,
+            "search_type": "premium",
             "results": recommendations
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
