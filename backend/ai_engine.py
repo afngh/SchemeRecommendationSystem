@@ -7,9 +7,10 @@ from sentence_transformers import SentenceTransformer
 import faiss
 
 # Configuration
-DB_PATH = "schemelens.db"
-FAISS_INDEX_PATH = "scheme_index.faiss"
-ID_MAPPING_PATH = "scheme_id_mapping.pkl"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'schemelens.db')
+FAISS_INDEX_PATH = os.path.join(BASE_DIR, '..', 'data', 'scheme_index.faiss')
+ID_MAPPING_PATH = os.path.join(BASE_DIR, '..', 'data', 'scheme_id_mapping.pkl')
 # Using a fast, lightweight, and highly accurate embedding model
 MODEL_NAME = 'all-MiniLM-L6-v2' 
 

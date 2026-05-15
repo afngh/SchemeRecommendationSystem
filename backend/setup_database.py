@@ -4,9 +4,10 @@ import sqlite3
 import uuid
 
 # Configuration
-SCHEMES_DIR = "schemes"
-MASTER_CSV_PATH = "all_schemes_master.csv"
-DB_PATH = "schemelens.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SCHEMES_DIR = os.path.join(BASE_DIR, '..', 'schemes')
+MASTER_CSV_PATH = os.path.join(BASE_DIR, '..', 'data', 'all_schemes_master.csv')
+DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'schemelens.db')
 
 def merge_and_clean_csvs():
     print("Gathering and merging all category CSVs...")

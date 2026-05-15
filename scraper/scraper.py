@@ -14,13 +14,15 @@ def create_backup(filename):
     # If the file already exists, let's keep a safe copy of it first
     if os.path.exists(filename):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_folder = "backups"
+        
+        # We will save backups inside the 'schemes/backups' folder
+        backup_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'schemes', 'backups')
         
         # Make a backups folder if it's not there
         if not os.path.exists(backup_folder):
             os.makedirs(backup_folder)
             
-        backup_file = os.path.join(backup_folder, f"{filename.replace('.csv', '')}_{timestamp}.csv")
+        backup_file = os.path.join(backup_folder, f"{os.path.basename(filename).replace('.csv', '')}_{timestamp}.csv")
         shutil.copy(filename, backup_file)
         print(f"Backed up {filename} to {backup_file}")
 
@@ -131,15 +133,22 @@ if __name__ == "__main__":
         for category in categories_to_scrape:
             print(f"\n--- Now scraping the '{category['name']}' category ({category['pages']} pages) ---")
             
+            # The CSVs will be saved in the 'schemes' folder next to the 'scraper' folder
+            schemes_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'schemes')
+            if not os.path.exists(schemes_dir):
+                os.makedirs(schemes_dir)
+                
+            csv_path = os.path.join(schemes_dir, category['file'])
+            
             # Back up any existing data for this category
-            create_backup(category['file'])
+            create_backup(csv_path)
             
             # Fetch the new data
             df = scrape_category(driver, category)
             
             if not df.empty:
-                df.to_csv(category['file'], index=False, encoding='utf-8')
-                print(f"Awesome! Saved {len(df)} schemes to {category['file']}")
+                df.to_csv(csv_path, index=False, encoding='utf-8')
+                print(f"Awesome! Saved {len(df)} schemes to {csv_path}")
             else:
                 print(f"Hmm, no data was found for {category['name']}.")
                 
