@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+:root {
+  --brand-primary: #1a1a2e;
+  --brand-accent: #6366f1;
+  --brand-accent-light: #a5b4fc;
+  --brand-pixel-1: #7c3aed;
+  --brand-pixel-2: #a78bfa;
+  --brand-pixel-3: #ddd6fe;
+  --bg-white: #ffffff;
+  --bg-light: #f8f8fb;
+  --bg-dark: #0f0f1a;
+  --text-primary: #1a1a2e;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --border: #e5e7eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+@theme inline {
+  --font-sans: var(--font-dm-sans);
+  --font-serif: var(--font-fraunces);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-light: var(--brand-accent-light);
+  --color-brand-pixel-1: var(--brand-pixel-1);
+  --color-brand-pixel-2: var(--brand-pixel-2);
+  --color-brand-pixel-3: var(--brand-pixel-3);
+  --color-bg-white: var(--bg-white);
+  --color-bg-light: var(--bg-light);
+  --color-bg-dark: var(--bg-dark);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-text-light: var(--text-light);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+}
+
+body {
+  background: var(--bg-light);
+  color: var(--text-primary);
+  font-family: var(--font-dm-sans), sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-fraunces), serif;
+}
+
+/* Float Animation for Pixel Decoration */
+@keyframes pixelFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+

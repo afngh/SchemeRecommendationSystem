@@ -1,8 +1,8 @@
-# SKILL.md — SchemeLens Frontend (React JS)
+# SKILL.md — SchemeLens Frontend (Next.js App Router)
 
 ## Project Overview
 
-Build the frontend for **SchemeLens** — an AI-powered Indian government scheme recommendation system. The backend (FastAPI + FAISS + Gemini LLM) is already built with 4,500+ real schemes scraped from myscheme.gov.in. The frontend must connect to the live API and provide two portals: **Citizen Portal** (search & discover schemes) and **Government Dashboard** (risk analysis of policies).
+Build the frontend for **SchemeLens** using Next.js — an AI-powered Indian government scheme recommendation system. The backend (FastAPI + FAISS + Gemini LLM) is already built with 4,500+ real schemes scraped from myscheme.gov.in. The frontend must connect to the live API and provide two portals: **Citizen Portal** (search & discover schemes) and **Government Dashboard** (risk analysis of policies).
 
 ---
 
@@ -331,15 +331,30 @@ Risk levels: 🟢 Low (<2.0) | 🟡 Medium (2.0–2.99) | 🔴 High (≥3.0)
 
 ---
 
-## React Component Architecture
+## Next.js Component & File Architecture (App Router)
+
+We will use Next.js's modern App Router architecture (`src/` folder optional, but let's structure with root `/app` and `/components` for absolute clarity):
 
 ```
-App.jsx
+src/
+├── app/
+│   ├── layout.js              — Root layout with Navbar, AnnouncementBanner, Footer, and fonts loaded
+│   ├── page.js                — Landing Page (/)
+│   ├── recommend/
+│   │   └── page.js            — Scheme Recommendation Page (/recommend)
+│   ├── gov/
+│   │   └── dashboard/
+│   │       └── page.js        — Government Risk Dashboard (/gov/dashboard)
+│   ├── top-rated/
+│   │   └── page.js            — Top Rated Schemes Page (/top-rated)
+│   ├── about/
+│   │   └── page.js            — About Page (/about)
+│   └── globals.css            — Global CSS configurations
 ├── components/
 │   ├── Navbar.jsx              — logo, nav links, CTA buttons, mobile hamburger
 │   ├── AnnouncementBanner.jsx  — dark top bar, dismissible
 │   ├── Footer.jsx              — dark footer, links, social
-│   ├── SchemeCard.jsx          — reusable card for any scheme result
+│   ├── SchemeCard.jsx          — reusable card for any scheme result (use 'use client' where needed)
 │   ├── RiskSchemeCard.jsx      — scheme card with risk scores visualization
 │   ├── PixelDecoration.jsx     — scattered colored squares (hero decoration)
 │   ├── AIPromptBox.jsx         — textarea + submit + quick chips + mode toggle
@@ -349,12 +364,8 @@ App.jsx
 │   ├── RiskSummaryCards.jsx    — top-level stats cards for risk dashboard
 │   ├── SkeletonCard.jsx        — gray shimmer loading card
 │   └── SearchModeToggle.jsx    — Normal/Premium pill toggle
-└── pages/
-    ├── Landing.jsx
-    ├── Recommend.jsx
-    ├── GovDashboard.jsx
-    ├── TopRated.jsx
-    └── About.jsx
+└── utils/
+    └── api.js                 — API helper functions and client/server endpoints
 ```
 
 ---
@@ -543,19 +554,17 @@ const searchRiskyByTags = async (tags, topN = 10) => {
 
 ## Build Order
 
-1. Create `globals.css` — variables, fonts, base reset, keyframes
-2. Create API utility file (`api.js`) — all fetch functions
-3. Build `SchemeCard.jsx` — most reused component
-4. Build `RiskSchemeCard.jsx` — scheme card with risk bars
-5. Build `Navbar.jsx` — desktop + mobile
-6. Build `PixelDecoration.jsx` — visual flair
-7. Build `Landing.jsx` — hero + features + CTA
-8. Build `Recommend.jsx` — AI prompt box + normal/premium toggle + results
-9. Build `GovDashboard.jsx` — risk summary + tag search + risky schemes browser
-10. Build `TopRated.jsx` — top rated schemes grid
-11. Build `Footer.jsx` — dark footer
-12. Wire up routing in `App.jsx`
-13. Test responsive at 375px, 768px, 1280px
+1. Setup Next.js boilerplate and install `lucide-react`
+2. Create `app/globals.css` — CSS variables, fonts, base reset, keyframes
+3. Create API utility file (`utils/api.js`) — all backend fetch functions
+4. Build shared layout components (`Navbar.jsx`, `Footer.jsx`, `AnnouncementBanner.jsx`) and wire them into `app/layout.js`
+5. Build reusable display components (`SchemeCard.jsx`, `RiskSchemeCard.jsx`, `PixelDecoration.jsx`, `SkeletonCard.jsx`)
+6. Implement `app/page.js` (Landing page layout, feature lists, hero animation)
+7. Implement `app/recommend/page.js` (Client-side interactive state for prompt input and search matches)
+8. Implement `app/gov/dashboard/page.js` (Server/client data fetching, risk aggregation dashboard)
+9. Implement `app/top-rated/page.js` (Fetch top feedback data and display ratings grid)
+10. Implement `app/about/page.js` (Static explanation page of tech stack & custom risk algorithms)
+11. Test and optimize Next.js routing, loading states, and dynamic screen resizing (375px, 768px, 1280px)
 
 ---
 
