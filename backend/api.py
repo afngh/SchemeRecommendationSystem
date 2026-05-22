@@ -306,4 +306,143 @@ def get_risk_summary():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class CustomRiskRequest(BaseModel):
+    prompt: str
+    accessibility_weight: float = 0.2
+    bureaucratic_weight: float = 0.2
+    market_distortion_weight: float = 0.2
+    ecological_weight: float = 0.2
+    social_friction_weight: float = 0.2
+    limit: Optional[int] = 5
+
+
+@app.post("/api/gov/custom-risk")
+def custom_risk_sandbox(request: CustomRiskRequest):
+    """
+    CUSTOM POLICY RISK SANDBOX (LangChain + Gemini Workflow)
+    Analyzes schemes against natural language risk descriptions and custom risk parameter weights.
+    """
+    if not request.prompt.strip():
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty.")
+        
+    try:
+        import re
+        from prompt_enhancer import GOOGLE_API_KEY
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        from langchain_core.prompts import ChatPromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
+        
+        if not GOOGLE_API_KEY:
+             raise HTTPException(
+                 status_code=503,
+                 detail="Gemini API key not configured."
+             )
+             
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-2.0-flash",
+            google_api_key=GOOGLE_API_KEY,
+            temperature=0.2,
+            max_output_tokens=150,
+        )
+        
+        tag_prompt_tmpl = ChatPromptTemplate.from_messages([
+            ("system", "You are a policy analyst assistant. Extract 3-5 space-separated keyword tags from the user's custom risk concern to search government schemes. Return ONLY the space-separated words, nothing else."),
+            ("human", "{concern}")
+        ])
+        
+        tag_chain = tag_prompt_tmpl | llm | StrOutputParser()
+        extracted_tags = tag_chain.invoke({"concern": request.prompt})
+        extracted_tags = extracted_tags.strip().strip('"').strip("'")
+        
+        # Step 2: Query schemes from DB matching those extracted tags
+        from government_risk_analyzer import RiskAnalyzer
+        analyzer = RiskAnalyzer()
+        matched_schemes = analyzer.search_risky_schemes_by_tags(extracted_tags, top_n=15)
+        
+        if not matched_schemes:
+            # Fallback to general risky schemes
+            matched_schemes = analyzer.search_risky_schemes_by_tags("subsidy grant training loan certificate", top_n=15)
+            
+        # Step 3: Use Gemini to analyze and rank the matched schemes against the custom risk criteria and weights
+        analysis_prompt_tmpl = ChatPromptTemplate.from_messages([
+            ("system", """You are a senior government auditor. You are reviewing the following scheme against a specific policy concern.
+Concern: {concern}
+
+Scheme Title: {title}
+Scheme Description: {description}
+
+Assign a risk score from 0.0 (No Risk) to 10.0 (Extremely High Risk) indicating how much this specific scheme triggers the policy concern.
+Provide a 1-2 sentence justification.
+
+Return format EXACTLY like this:
+Score: [number]
+Justification: [text]"""),
+            ("human", "Audit this scheme.")
+        ])
+        
+        analysis_chain = analysis_prompt_tmpl | llm | StrOutputParser()
+        
+        results = []
+        for scheme in matched_schemes[:request.limit]:
+            audit_output = analysis_chain.invoke({
+                "concern": request.prompt,
+                "title": scheme["title"],
+                "description": scheme.get("description", "Government welfare benefits distribution.")
+            })
+            
+            # Parse output
+            score_match = re.search(r"Score:\s*([0-9.]+)", audit_output, re.IGNORECASE)
+            just_match = re.search(r"Justification:\s*(.+)", audit_output, re.IGNORECASE)
+            
+            custom_score = float(score_match.group(1)) if score_match else 5.0
+            justification = just_match.group(1) if just_match else "Scheme triggers custom concern criteria."
+            
+            # Calculate composite weighted risk based on the sliders
+            w_acc = request.accessibility_weight * scheme.get("accessibility_risk", 1.0)
+            w_bur = request.bureaucratic_weight * scheme.get("bureaucratic_risk", 1.0)
+            w_mar = request.market_distortion_weight * scheme.get("market_distortion_risk", 1.0)
+            w_eco = request.ecological_weight * scheme.get("ecological_risk", 1.0)
+            w_soc = request.social_friction_weight * scheme.get("social_friction_risk", 1.0)
+            
+            weight_sum = (request.accessibility_weight + request.bureaucratic_weight + 
+                          request.market_distortion_weight + request.ecological_weight + 
+                          request.social_friction_weight)
+            
+            if weight_sum > 0:
+                weighted_base = (w_acc + w_bur + w_mar + w_eco + w_soc) / weight_sum
+            else:
+                weighted_base = scheme.get("composite_risk_score", 3.0)
+                
+            # Combine composite base risk with the LLM custom risk evaluation
+            final_composite_score = round((weighted_base * 0.4) + (custom_score * 0.6), 2)
+            
+            results.append({
+                "scheme_id": scheme["scheme_id"],
+                "title": scheme["title"],
+                "category": scheme["category"],
+                "tags": scheme["tags"],
+                "link": scheme["link"],
+                "accessibility_risk": scheme.get("accessibility_risk", 1.0),
+                "bureaucratic_risk": scheme.get("bureaucratic_risk", 1.0),
+                "market_distortion_risk": scheme.get("market_distortion_risk", 1.0),
+                "ecological_risk": scheme.get("ecological_risk", 1.0),
+                "social_friction_risk": scheme.get("social_friction_risk", 1.0),
+                "custom_risk_score": custom_score,
+                "weighted_base_score": round(weighted_base, 2),
+                "final_composite_score": final_composite_score,
+                "justification": justification
+            })
+            
+        # Sort by final score descending
+        results.sort(key=lambda x: x["final_composite_score"], reverse=True)
+        
+        return {
+            "prompt": request.prompt,
+            "extracted_tags": extracted_tags,
+            "results": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Run using: uvicorn api:app --reload
