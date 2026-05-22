@@ -286,10 +286,10 @@ export default function RecommendPage() {
                     <button
                       type="button"
                       onClick={() => setSearchMode('normal')}
-                      className={`py-1.5 text-2xs font-semibold rounded-md text-center transition-all duration-300 ${
+                      className={`py-1.5 text-2xs font-semibold rounded-md text-center transition-all duration-200 border ${
                         searchMode === 'normal' 
-                          ? 'bg-[#111827] text-white shadow-xs' 
-                          : 'text-[#4b5563] hover:text-[#111827] hover:bg-[#e5e7eb]/50'
+                          ? 'bg-white text-[#111827] border-[#e5e7eb] shadow-2xs' 
+                          : 'border-transparent text-[#4b5563] hover:text-[#111827] hover:bg-[#e5e7eb]/40'
                       }`}
                     >
                       Normal Vector
@@ -297,13 +297,13 @@ export default function RecommendPage() {
                     <button
                       type="button"
                       onClick={() => setSearchMode('smart')}
-                      className={`py-1.5 text-2xs font-bold rounded-md text-center transition-all duration-300 ${
+                      className={`py-1.5 text-2xs font-semibold rounded-md text-center transition-all duration-200 border ${
                         searchMode === 'smart' 
-                          ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-md' 
-                          : 'text-[#4b5563] hover:text-[#111827] hover:bg-[#e5e7eb]/50'
+                          ? 'bg-[#111827] text-white border-[#111827] shadow-sm' 
+                          : 'border-transparent text-[#4b5563] hover:text-[#111827] hover:bg-[#e5e7eb]/40'
                       }`}
                     >
-                      ★ Smart LLM Enhanced
+                      Smart LLM Enhanced
                     </button>
                   </div>
                   
@@ -311,12 +311,12 @@ export default function RecommendPage() {
                   <p className="text-[10px] text-[#6b7280] mt-2 flex items-center gap-1.5 transition-all duration-200">
                     {searchMode === 'smart' ? (
                       <>
-                        <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-ping"></span>
-                        <span className="text-purple-700 font-medium">Using Gemini Flash 2.0 query keywords expansion.</span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#111827]"></span>
+                        <span>Using Gemini Flash 2.0 query keywords expansion.</span>
                       </>
                     ) : (
                       <>
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#111827]"></span>
+                        <span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
                         <span>Using classic FAISS Dense Passage Retrieval vector search.</span>
                       </>
                     )}
