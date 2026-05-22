@@ -4,6 +4,24 @@ An AI-powered citizen discovery and government auditing platform that recommends
 
 ---
 
+## 🛠️ Tech Stack & Prerequisites
+
+### Core Technology Stack
+* **Backend API Engine**: Python (3.10+), FastAPI (asynchronous REST API framework), SQLite (local database), and Uvicorn.
+* **Vector Semantic Search**: FAISS (Facebook AI Similarity Search) and SentenceTransformers (`all-MiniLM-L6-v2` embeddings).
+* **Smart Prompt Enrichment**: Google Gemini LLM API via LangChain Core.
+* **Frontend Portal Client**: Next.js 16 (React 19 framework), TailwindCSS, and Lucide React.
+* **Identity Management**: Clerk Authentication (multi-tenant email/Google login, OAuth, and user profile manager).
+* **Database Synchronization**: Supabase Postgres Client (dynamic citizen demographic profiles & developer API keys database sync).
+
+### What to Download & Install
+To run this application locally, download and install the following packages:
+1. **Python (version >= 3.10)**: [Download Python](https://www.python.org/downloads/) (Make sure to check "Add Python to PATH" during installation).
+2. **Node.js (version >= 20.0)** & **npm**: [Download Node.js](https://nodejs.org/) (Includes npm).
+3. **Git**: [Download Git](https://git-scm.com/) (For cloning and repository sync).
+
+---
+
 ## 📁 Unified Project Structure
 
 ```
