@@ -1,15 +1,15 @@
 # 🔍 SchemeLens — AI Government Scheme Recommendation System
 
-An AI-powered platform that recommends Indian government schemes to citizens using NLP semantic search, and provides a risk analysis engine for government policy evaluation.
+An AI-powered citizen discovery and government auditing platform that recommends Indian government schemes to citizens using FAISS NLP semantic vector search, and provides a multi-dimensional risk analysis engine for policy makers.
 
 ---
 
-## 📁 Project Structure
+## 📁 Unified Project Structure
 
 ```
 CSP Project/
 ├── backend/
-│   ├── api.py                      # FastAPI server — all API endpoints
+│   ├── api.py                      # FastAPI server — REST endpoints & Heuristic Auditing
 │   ├── ai_engine.py                # FAISS semantic search + embedding engine
 │   ├── prompt_enhancer.py          # Gemini LLM prompt enhancement (LangChain)
 │   ├── government_risk_analyzer.py # NLP-based policy risk analysis engine
@@ -19,10 +19,23 @@ CSP Project/
 │   ├── scheme_index.faiss          # FAISS vector index
 │   ├── scheme_id_mapping.pkl       # FAISS index → scheme_id mapping
 │   └── all_schemes_master.csv      # Merged master CSV
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── recommend/          # FAISS Search & Premium Gemini Match UI
+│   │   │   ├── gov/dashboard/      # Policy Risk Auditor Sandbox Panel
+│   │   │   ├── top-rated/          # Dynamic Citizen-Ranked Schemes List
+│   │   │   ├── delivery/           # WhatsApp, Telegram Bot, & n8n webhook settings
+│   │   │   ├── developer/          # API Key generator & Swagger Sandbox console
+│   │   │   ├── profile/            # Demographic settings synced via Supabase
+│   │   │   └── page.js             # Vercel-style landing page
+│   │   └── utils/
+│   │       ├── supabase.js         # Stale-cache free dynamic Supabase client
+│   │       └── delivery.js         # Twilio/Webhook dispatch utilities
+│   ├── .env.local                  # Frontend environment settings (Clerk + Supabase)
+│   └── package.json                # Next.js 16 (Turbopack) settings
 ├── schemes/                        # Raw category-wise CSV files (scraped data)
 ├── scraper/                        # Web scraping scripts
-├── rd/                             # Research & development notes
-├── .env                            # Environment variables (API keys)
 └── README.md
 ```
 
@@ -30,89 +43,75 @@ CSP Project/
 
 ## ⚡ Quick Start
 
-### 1. Install Dependencies
+### 1. Install Backend Dependencies & Initialize DB
 
 ```bash
+# Install core Python dependencies
 pip install fastapi uvicorn sentence-transformers faiss-cpu pandas langchain langchain-google-genai python-dotenv
-```
 
-### 2. Setup Database
-
-```bash
+# Initialize SQLite database
 cd backend
 python setup_database.py
-```
 
-### 3. Build Vector Database (First time only)
-
-```bash
+# Compile SentenceTransformers FAISS vector indexes (First time only)
 python ai_engine.py
 ```
 
-### 4. Configure Gemini API Key (for Premium Search)
+### 2. Configure Environment Keys
 
-Edit the `.env` file in the project root:
-
+#### Backend Setup (`.env` in root)
 ```env
 GOOGLE_API_KEY=your-gemini-api-key-here
 ```
-
 > Get your key from: https://aistudio.google.com/apikey
 
-### 5. Start the API Server
-
-```bash
-cd backend
-uvicorn api:app --reload
+#### Frontend Setup (`frontend/.env.local`)
+Create a `.env.local` inside the `frontend` folder:
+```env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-Server runs at: `http://127.0.0.1:8000`  
-Swagger Docs: `http://127.0.0.1:8000/docs`
+### 3. Start the Platform Services
+
+```bash
+# Terminal 1: Run the FastAPI backend service
+cd backend
+uvicorn api:app --reload
+
+# Terminal 2: Start the Next.js (Turbopack) frontend portal
+cd frontend
+npm install
+npm run dev
+```
+
+* **FastAPI Endpoint Docs**: `http://127.0.0.1:8000/docs`
+* **Citizen Frontend Portal**: `http://localhost:3000`
 
 ---
 
 ## 📡 API Reference
 
 ### Base URL
-
 ```
 http://127.0.0.1:8000
 ```
 
 ---
 
-### `GET /`
+### `POST /api/recommend` — Normal Vector Search
+Takes raw search prompts and runs cosine similarity matching using direct local SentenceTransformers over FAISS.
 
-Health check / welcome message.
-
-**Response:**
-```json
-{
-  "message": "Welcome to SchemeLens AI API. Use /docs to see all endpoints."
-}
-```
-
----
-
-### `POST /api/recommend` — Normal Search
-
-**For:** Regular / Free users  
-**What it does:** Takes the raw query and runs direct FAISS semantic search. No LLM involved.
-
-**Request Body:**
+* **Request Body:**
 ```json
 {
   "query": "I need help for my daughter's school fees",
   "top_k": 5
 }
 ```
-
-| Field   | Type   | Required | Default | Description                     |
-|---------|--------|----------|---------|---------------------------------|
-| `query` | string | ✅       | —       | Natural language search query   |
-| `top_k` | int    | ❌       | 5       | Number of results to return     |
-
-**Response:**
+* **Response:**
 ```json
 {
   "query": "I need help for my daughter's school fees",
@@ -130,373 +129,90 @@ Health check / welcome message.
 }
 ```
 
-**cURL:**
-```bash
-curl -X POST http://127.0.0.1:8000/api/recommend \
-  -H "Content-Type: application/json" \
-  -d '{"query": "scholarship for engineering students", "top_k": 5}'
-```
-
 ---
 
-### `POST /api/recommend/premium` — Premium Semantic Search
+### `POST /api/recommend/premium` — Smart LLM Search
+Uses Google Gemini models via LangChain to enrich the query with relevant synonyms, policy keywords, and demographic tags, then returns faiss matches.
 
-**For:** Premium users  
-**What it does:** Enhances the query using **Gemini LLM via LangChain** to extract intent, demographics, and policy keywords — then runs FAISS semantic search with the enriched context.
-
-> ⚠️ Requires `GOOGLE_API_KEY` to be set in `.env`
-
-**Request Body:**
+* **Request Body:**
 ```json
 {
   "query": "I am a single mother looking for help with my daughter's education",
   "top_k": 5
 }
 ```
-
-| Field   | Type   | Required | Default | Description                     |
-|---------|--------|----------|---------|---------------------------------|
-| `query` | string | ✅       | —       | Natural language search query   |
-| `top_k` | int    | ❌       | 5       | Number of results to return     |
-
-**Response:**
+* **Response:**
 ```json
 {
   "query": "I am a single mother looking for help with my daughter's education",
-  "enhanced_query": "education scholarship financial assistance single mother girl child student school fees tuition women empowerment BPL SC ST OBC Education Learning welfare",
+  "enhanced_query": "education scholarship financial assistance single mother girl child student school fees tuition BPL SC ST OBC",
   "search_type": "premium",
-  "results": [
-    {
-      "scheme_id": "abc12345",
-      "title": "...",
-      "category": "...",
-      "description": "...",
-      "tags": "...",
-      "link": "..."
-    }
-  ]
-}
-```
-
-**cURL:**
-```bash
-curl -X POST http://127.0.0.1:8000/api/recommend/premium \
-  -H "Content-Type: application/json" \
-  -d '{"query": "I am a widow and need pension support", "top_k": 5}'
-```
-
-**Error (503) — Gemini not configured:**
-```json
-{
-  "detail": "Premium search is temporarily unavailable. Gemini API key may not be configured."
+  "results": [...]
 }
 ```
 
 ---
 
-### `POST /api/rate` — Rate a Scheme
+### `POST /api/gov/custom-risk` — Policy Risk Sandbox
+Audits schemes against natural language risk descriptions and custom risk parameter weights.
 
-Submit a user rating (1-5 stars) and optional feedback for a scheme.
+> [!NOTE]
+> **Heuristic Resiliency Fallback**: If your Google Gemini API key hits strict free-tier rate limits (`429 RESOURCE_EXHAUSTED`), the backend gracefully catches the exception and immediately falls back to a **high-fidelity local offline heuristic semantic keywords auditor**. The sandbox never crashes and returns immediate results marked with `[Local Offline Heuristics]`.
 
-**Request Body:**
+* **Request Body:**
 ```json
 {
-  "scheme_id": "abc12345",
-  "rating": 4,
-  "feedback": "Very helpful scheme, easy to apply!"
+  "prompt": "Find schemes that could lead to extreme water waste",
+  "accessibility_weight": 0.2,
+  "bureaucratic_weight": 0.2,
+  "market_distortion_weight": 0.2,
+  "ecological_weight": 0.2,
+  "social_friction_weight": 0.2,
+  "limit": 5
 }
-```
-
-| Field       | Type   | Required | Default | Description                        |
-|-------------|--------|----------|---------|------------------------------------|
-| `scheme_id` | string | ✅       | —       | ID of the scheme to rate           |
-| `rating`    | int    | ✅       | —       | Rating from 1 to 5                 |
-| `feedback`  | string | ❌       | `""`    | Optional text feedback             |
-
-**Response:**
-```json
-{
-  "message": "Feedback submitted successfully!"
-}
-```
-
-**cURL:**
-```bash
-curl -X POST http://127.0.0.1:8000/api/rate \
-  -H "Content-Type: application/json" \
-  -d '{"scheme_id": "abc12345", "rating": 5, "feedback": "Great scheme!"}'
 ```
 
 ---
 
-### `GET /api/top-rated` — Top Rated Schemes
+## 💻 Premium Portal Features
 
-Fetches the highest-rated schemes based on average user feedback.
+### 🔍 Centered AI Match Portal (`/recommend`)
+* **Dual Toggles**: A sleek segment control design switching between `Normal Vector` (light mode active border) and `Smart LLM Enhanced` (premium dark slate background).
+* **Profile Sync Status**: Automatically displays a Vercel-style matching profile banner with a pulsing active status. Allows instant redirects to customize parameters.
 
-**Query Parameters:**
+### 🏆 Ranked Schemes Portal (`/top-rated`)
+* Dynamic rankings compiled dynamically from live SQLite citizen utility ratings (`GET /api/top-rated`).
+* Star widgets, review counters, and streamlined, button-like `Official Portal` details redirect links.
 
-| Param   | Type | Required | Default | Description                   |
-|---------|------|----------|---------|-------------------------------|
-| `limit` | int  | ❌       | 5       | Number of top results         |
+### 📱 Omnichannel Alert Delivery (`/delivery`)
+* **Twilio WhatsApp Integration**: Deliver matches directly via WhatsApp.
+* **Telegram Connection Bot**: Interactive setup with `@SchemeLensBot` via transient connection tokens to retrieve chat IDs.
+* **n8n Automation Sandbox**: Submit test payloads to active n8n automation webhook instances.
 
-**Response:**
-```json
-{
-  "top_rated": [
-    {
-      "scheme_id": "abc12345",
-      "title": "Pradhan Mantri Ujjwala Yojana",
-      "category": "Welfare Of Families",
-      "description": "...",
-      "link": "...",
-      "avg_rating": 4.8,
-      "total_reviews": 12
-    }
-  ]
-}
-```
+### 🔑 Developer Key Playground (`/developer`)
+* **Credential Generator**: Generate, list, and revoke staging/live API credentials synced to Supabase profile states.
+* **OpenAPI sandbox**: Dynamic Swagger-style request execution panel to inspect real-time JSON payloads, endpoint latency, and success rates.
 
-**cURL:**
-```bash
-curl http://127.0.0.1:8000/api/top-rated?limit=10
-```
+### 👤 Profile Preferences Sync (`/profile`)
+* Dynamic caste, state, and occupations data bindings saved instantly in your Supabase postgres `profiles` table.
+* Integrates all security, email, and social credential management directly using Clerk's embedded `UserProfile` components.
 
 ---
 
-### `GET /api/gov/risky-schemes` — Top Risky Schemes
+## 🏛️ Government Risk Analyzer CLI
 
-Fetch the most dangerous schemes sorted by composite risk score. Supports category filtering and minimum risk threshold.
-
-**Query Parameters:**
-
-| Param      | Type   | Required | Default | Description                                  |
-|------------|--------|----------|---------|----------------------------------------------|
-| `category` | string | ❌       | all     | Filter by category (e.g., `Agriculture`)     |
-| `limit`    | int    | ❌       | 20      | Number of results                            |
-| `min_risk` | float  | ❌       | 0.0     | Minimum composite risk score threshold       |
-
-**Response:**
-```json
-{
-  "filter": { "category": "Agriculture", "min_risk": 2.0, "limit": 5 },
-  "total_results": 2,
-  "risky_schemes": [
-    {
-      "scheme_id": "2ed2bbcd",
-      "title": "Goat Rearing Scheme",
-      "category": "Agriculture",
-      "tags": "Women, BPL, Disability, Scheduled Tribe, Farmer",
-      "link": "...",
-      "accessibility_risk": 0.0,
-      "bureaucratic_risk": 0.0,
-      "market_distortion_risk": 7.0,
-      "ecological_risk": 1.0,
-      "social_friction_risk": 6.0,
-      "composite_risk_score": 2.8
-    }
-  ]
-}
-```
-
-**cURL:**
-```bash
-# All categories, top 10
-curl "http://127.0.0.1:8000/api/gov/risky-schemes?limit=10"
-
-# Agriculture only, minimum risk 2.0
-curl "http://127.0.0.1:8000/api/gov/risky-schemes?category=Agriculture&min_risk=2.0&limit=5"
-```
-
----
-
-### `POST /api/gov/risky-schemes/search` — Tag-Based Risk Search
-
-Search for risky schemes matching specific tags (e.g., "education, women", "agriculture rural subsidy").
-
-**Request Body:**
-```json
-{
-  "tags": "education, women",
-  "top_n": 5
-}
-```
-
-| Field   | Type   | Required | Default | Description                               |
-|---------|--------|----------|---------|-------------------------------------------|
-| `tags`  | string | ✅       | —       | Comma or space separated search tags      |
-| `top_n` | int    | ❌       | 10      | Number of results to return               |
-
-**Response:**
-```json
-{
-  "tags": "education, women",
-  "total_results": 5,
-  "risky_schemes": [
-    {
-      "scheme_id": "c20b303b",
-      "title": "Sukhad Sahara Yojana",
-      "category": "Benefits Social",
-      "description": "...",
-      "tags": "Widow, Deserted Woman, BPL, Financial Assistance",
-      "composite_risk_score": 3.2,
-      "tag_relevance": 1
-    }
-  ]
-}
-```
-
-**cURL:**
-```bash
-curl -X POST http://127.0.0.1:8000/api/gov/risky-schemes/search \
-  -H "Content-Type: application/json" \
-  -d '{"tags": "agriculture, rural, subsidy", "top_n": 5}'
-```
-
----
-
-### `GET /api/gov/risk-summary` — Aggregate Risk Statistics
-
-Returns overall risk stats and per-category breakdown with high/medium/low risk counts.
-
-**Response:**
-```json
-{
-  "overall": {
-    "total_schemes": 4580,
-    "overall_avg_risk": 1.34,
-    "overall_max_risk": 3.3,
-    "total_high_risk": 8,
-    "total_medium_risk": 670,
-    "total_low_risk": 3902
-  },
-  "by_category": [
-    {
-      "category": "Justice Law Grievances",
-      "total_schemes": 12,
-      "avg_risk": 1.67,
-      "max_risk": 2.4,
-      "min_risk": 0.6,
-      "high_risk_count": 0,
-      "medium_risk_count": 4,
-      "low_risk_count": 8
-    }
-  ]
-}
-```
-
-**cURL:**
-```bash
-curl http://127.0.0.1:8000/api/gov/risk-summary
-```
-
----
-
-## 🏛️ Government Risk Analyzer (CLI)
-
-A separate CLI tool for government officials to analyze policy risks.
+Launch a dedicated command line dashboard to execute deep NLP policy audits across the entire database:
 
 ```bash
 cd backend
 python government_risk_analyzer.py
 ```
 
-**Menu Options:**
-
-| Option | Description |
-|--------|-------------|
-| 1      | **Run Full Risk Analysis** — Analyzes all 4,500+ schemes using 5 NLP algorithms and saves scores to the database |
-| 2      | **Search Risky Schemes by Tags** — Interactive tag-based search (e.g., `education, women`, `agriculture rural subsidy`) |
-| 3      | Exit |
-
-### Risk Algorithms
-
-| # | Algorithm              | What it detects                                      |
-|---|------------------------|------------------------------------------------------|
-| 1 | Accessibility Risk     | High documentation barriers, online-only access      |
-| 2 | Bureaucratic Risk      | Red tape, multiple departments, approval delays      |
-| 3 | Market Distortion Risk | Handout dependency vs. empowerment balance           |
-| 4 | Ecological Risk        | Environmental threats (agriculture/industry schemes) |
-| 5 | Social Friction Risk   | Demographic filtering causing social tension         |
-
----
-
-## 🧠 Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                     Frontend (TBD)                      │
-└────────────────────────┬────────────────────────────────┘
-                         │
-                    HTTP Requests
-                         │
-┌────────────────────────▼────────────────────────────────┐
-│                  api.py (FastAPI)                        │
-│                                                         │
-│  CITIZEN ENDPOINTS:                                     │
-│  /api/recommend            → Normal FAISS search        │
-│  /api/recommend/premium    → Gemini + FAISS search      │
-│  /api/rate                 → Save user feedback         │
-│  /api/top-rated            → Fetch top rated schemes    │
-│                                                         │
-│  GOVERNMENT ENDPOINTS:                                  │
-│  /api/gov/risky-schemes        → Top risky schemes      │
-│  /api/gov/risky-schemes/search → Tag-based risk search  │
-│  /api/gov/risk-summary         → Aggregate risk stats   │
-└──────┬──────────────────────────────┬───────────────────┘
-       │                              │
-       ▼                              ▼
-┌──────────────┐        ┌─────────────────────────┐
-│  ai_engine   │        │   prompt_enhancer       │
-│              │        │                         │
-│ SentenceTF   │◄───────│  Gemini LLM (LangChain) │
-│ FAISS Index  │        │  Query Enhancement      │
-└──────┬───────┘        └─────────────────────────┘
-       │
-       ▼
-┌──────────────┐
-│  SQLite DB   │
-│ schemelens.db│
-└──────────────┘
-```
-
----
-
-## 🔑 Environment Variables
-
-| Variable         | Required | Description                     |
-|------------------|----------|---------------------------------|
-| `GOOGLE_API_KEY` | For premium search | Gemini API key from Google AI Studio |
-
----
-
-## 📊 Database Schema
-
-### `schemes` table
-| Column      | Type | Description              |
-|-------------|------|--------------------------|
-| scheme_id   | TEXT | Primary key (UUID)       |
-| title       | TEXT | Scheme name              |
-| category    | TEXT | Category (14 categories) |
-| description | TEXT | Full description         |
-| tags        | TEXT | Comma-separated keywords |
-| link        | TEXT | URL to myscheme.gov.in   |
-
-### `feedback` table
-| Column        | Type     | Description                |
-|---------------|----------|----------------------------|
-| id            | INTEGER  | Auto-increment primary key |
-| scheme_id     | TEXT     | Foreign key → schemes      |
-| rating        | INTEGER  | 1-5 stars                  |
-| user_feedback | TEXT     | Optional text feedback     |
-| timestamp     | DATETIME | Auto-generated             |
-
-### `government_risk_analysis` table
-| Column                 | Type | Description                     |
-|------------------------|------|---------------------------------|
-| scheme_id              | TEXT | Primary key, FK → schemes       |
-| accessibility_risk     | REAL | Score 0-10                      |
-| bureaucratic_risk      | REAL | Score 0-10                      |
-| market_distortion_risk | REAL | Score 0-10                      |
-| ecological_risk        | REAL | Score 0-10                      |
-| social_friction_risk   | REAL | Score 0-10                      |
-| composite_risk_score   | REAL | Average of all 5 scores (0-10)  |
+### Risk Dimension Matrix
+| Dimension | NLP Model Focus | What it Evaluates |
+|---|---|---|
+| **1. Accessibility** | Vocabulary & Docs Density | Documentation overhead and exclusion barriers. |
+| **2. Bureaucratic** | Ministry/Dept Complexity | Red tape, multiple approvals, and processing delays. |
+| **3. Market Distortion** | Handout vs Credit ratio | Subsidy-driven market dependence vs enablement. |
+| **4. Ecological** | Resource Consumption Tags | Resource drain, water waste, and greenhouse footprints. |
+| **5. Social Friction** | Caste/Demographic filtering | Disproportionate target parameters causing friction. |
