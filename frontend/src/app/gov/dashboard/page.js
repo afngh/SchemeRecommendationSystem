@@ -170,10 +170,6 @@ export default function GovDashboardPage() {
               Preferences
             </Link>
           </div>
-
-          <div className="flex items-center gap-2 bg-[#f9fafb] border border-[#e5e7eb] px-3 py-1 rounded text-2xs font-semibold text-red-600">
-            Internal Access Only
-          </div>
         </div>
       </header>
 

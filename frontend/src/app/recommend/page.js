@@ -207,83 +207,45 @@ export default function RecommendPage() {
       </header>
 
       {/* Main recommendation layout */}
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      {/* Main recommendation layout */}
+      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8 flex-1 space-y-8">
         
-        {/* Personalization Sidebar (Demographic filters summary) */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-5">
-            <h2 className="text-sm font-bold text-[#111827] mb-3 flex items-center gap-1.5 uppercase tracking-wider text-2xs">
-              Personalization Engine
-            </h2>
-            
-            {demographicsLoading ? (
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-100 rounded w-3/4 animate-pulse"></div>
-                <div className="h-4 bg-gray-100 rounded w-1/2 animate-pulse"></div>
-              </div>
-            ) : demographics ? (
-              <div className="space-y-4">
-                <div className="text-xs text-[#4b5563] space-y-2 leading-relaxed bg-[#f9fafb] p-3.5 rounded-lg border border-[#e5e7eb]">
-                  <p><strong>Domicile State:</strong> {demographics.state}</p>
-                  <p><strong>Category (Caste):</strong> {demographics.caste}</p>
-                  <p><strong>Annual Income:</strong> {demographics.income ? `Rs. ${parseFloat(demographics.income).toLocaleString('en-IN')}` : 'Not Set'}</p>
-                  <div>
-                    <strong>Tags:</strong>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {demographics.occupation.length > 0 ? (
-                        demographics.occupation.map(tag => (
-                          <span key={tag} className="bg-indigo-50 border border-indigo-100 text-[#4f46e5] text-2xs font-semibold px-2 py-0.5 rounded-full">
-                            {tag}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-[#9ca3af] italic">None selected</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <Link
-                  href="/profile"
-                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-[#e5e7eb] hover:bg-[#f9fafb] text-[#111827] py-2 text-xs font-semibold transition-all"
-                >
-                  <Settings className="h-3.5 w-3.5" /> Configure Demographics
-                </Link>
-
-                <Link
-                  href="/delivery"
-                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-[#e5e7eb] hover:bg-[#f9fafb] text-[#111827] py-2 text-xs font-semibold transition-all mt-2"
-                >
-                  <Send className="h-3.5 w-3.5 text-[#4f46e5]" /> Delivery & Reminders
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-xs text-[#4b5563]">
-                  Configure your profile details to automatically prioritize relevant government welfare schemes.
-                </p>
-                <Link
-                  href="/profile"
-                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-[#111827] hover:bg-[#1f2937] text-white py-2 text-xs font-semibold transition-all shadow-sm"
-                >
-                  Create Match Profile
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Search & Results Panel */}
-        <div className="lg:col-span-3 space-y-8">
+        <div className="space-y-8">
           
           {/* Search Inputs */}
-          <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6 sm:p-8">
-            <form onSubmit={handleSearch} className="space-y-6">
+          <div className="bg-white rounded-xl shadow-xs border border-[#f3f4f6] p-6 space-y-6">
+            
+            {/* Demographic Profile Status Banner */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#f9fafb] border border-[#f3f4f6] rounded-lg p-3 text-xs">
+              <div className="flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full shrink-0 ${demographics ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`}></span>
+                <span className="text-[#4b5563]">
+                  {demographicsLoading ? (
+                    'Loading demographic match profile...'
+                  ) : demographics ? (
+                    <>
+                      <strong>Personalized Match Active:</strong> {demographics.caste} caste • {demographics.state} • {demographics.occupation.length} occupations set
+                    </>
+                  ) : (
+                    'No personalized match profile. Showing general welfare listings.'
+                  )}
+                </span>
+              </div>
+              <Link
+                href="/profile"
+                className="shrink-0 text-xs font-semibold text-[#4f46e5] hover:text-[#4338ca] transition-colors"
+              >
+                {demographics ? 'Adjust Profile' : 'Setup Profile'}
+              </Link>
+            </div>
+
+            <form onSubmit={handleSearch} className="space-y-5">
               
               {/* Main Query input */}
-              <div>
-                <label className="block text-sm font-semibold text-[#111827] mb-2">Describe your context or search criteria</label>
-                <div className="relative rounded-md shadow-sm">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-[#111827] uppercase tracking-wider">Search Criteria or Context</label>
+                <div className="relative rounded-md">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                     <Search className="h-4 w-4 text-[#9ca3af]" />
                   </div>
@@ -292,21 +254,21 @@ export default function RecommendPage() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="e.g. Higher education scholarship schemes for girls..."
-                    className="w-full rounded-md border-[#e5e7eb] bg-[#f9fafb] pl-10 pr-3 py-3 text-sm focus:border-[#4f46e5] focus:ring-[#4f46e5] transition-all text-[#111827]"
+                    className="w-full rounded-md border-[#e5e7eb] bg-[#f9fafb] pl-10 pr-3 py-2.5 text-xs focus:border-[#4f46e5] focus:ring-[#4f46e5] transition-all text-[#111827]"
                   />
                 </div>
               </div>
 
               {/* Quick Chips triggers */}
-              <div className="space-y-2">
-                <span className="block text-2xs font-semibold uppercase tracking-wider text-[#9ca3af]">Quick Search Prompts</span>
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-1.5">
+                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">Quick Search Prompts</span>
+                <div className="flex flex-wrap gap-1.5">
                   {quickChips.map((chipText, index) => (
                     <button
                       key={index}
                       type="button"
                       onClick={() => handleChipClick(chipText)}
-                      className="text-left bg-[#f9fafb] border border-[#e5e7eb] hover:bg-gray-100 text-[#4b5563] text-2xs px-3 py-1.5 rounded-md font-medium transition-all"
+                      className="text-left bg-[#f9fafb] border border-[#f3f4f6] hover:bg-gray-50 text-[#4b5563] text-2xs px-2.5 py-1 rounded-md font-medium transition-all"
                     >
                       {chipText}
                     </button>
@@ -315,19 +277,19 @@ export default function RecommendPage() {
               </div>
 
               {/* Limits and Search Toggles */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
                 
-                {/* Search Mode Toggles */}
+                {/* Search Mode Toggles with Dynamic Colors */}
                 <div>
-                  <span className="block text-xs font-semibold text-[#111827] mb-2">AI Matching Mode</span>
-                  <div className="grid grid-cols-2 gap-2 bg-[#f9fafb] p-1.5 rounded-lg border border-[#e5e7eb]">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-[#111827] mb-1.5">AI Matching Engine Mode</span>
+                  <div className="grid grid-cols-2 gap-1.5 bg-[#f3f4f6] p-1 rounded-lg border border-[#e5e7eb]">
                     <button
                       type="button"
                       onClick={() => setSearchMode('normal')}
-                      className={`py-2 text-xs font-semibold rounded-md text-center transition-all ${
+                      className={`py-1.5 text-2xs font-semibold rounded-md text-center transition-all duration-300 ${
                         searchMode === 'normal' 
-                          ? 'bg-white text-[#111827] shadow-2xs border border-[#e5e7eb]' 
-                          : 'text-[#4b5563] hover:text-[#111827]'
+                          ? 'bg-[#111827] text-white shadow-xs' 
+                          : 'text-[#4b5563] hover:text-[#111827] hover:bg-[#e5e7eb]/50'
                       }`}
                     >
                       Normal Vector
@@ -335,20 +297,35 @@ export default function RecommendPage() {
                     <button
                       type="button"
                       onClick={() => setSearchMode('smart')}
-                      className={`py-2 text-xs font-semibold rounded-md text-center transition-all ${
+                      className={`py-1.5 text-2xs font-bold rounded-md text-center transition-all duration-300 ${
                         searchMode === 'smart' 
-                          ? 'bg-white text-[#111827] shadow-2xs border border-[#e5e7eb]' 
-                          : 'text-[#4b5563] hover:text-[#111827]'
+                          ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white shadow-md' 
+                          : 'text-[#4b5563] hover:text-[#111827] hover:bg-[#e5e7eb]/50'
                       }`}
                     >
-                      Smart LLM Enhanced
+                      ★ Smart LLM Enhanced
                     </button>
                   </div>
+                  
+                  {/* Dynamic Mode Helper Explanation */}
+                  <p className="text-[10px] text-[#6b7280] mt-2 flex items-center gap-1.5 transition-all duration-200">
+                    {searchMode === 'smart' ? (
+                      <>
+                        <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-ping"></span>
+                        <span className="text-purple-700 font-medium">Using Gemini Flash 2.0 query keywords expansion.</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#111827]"></span>
+                        <span>Using classic FAISS Dense Passage Retrieval vector search.</span>
+                      </>
+                    )}
+                  </p>
                 </div>
 
                 {/* top_k Limit Selector */}
                 <div>
-                  <label className="block text-xs font-semibold text-[#111827] mb-2">Limit Schemes Returned (top_k)</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#111827] mb-1.5">Limit Schemes (top_k)</label>
                   <select
                     value={topK}
                     onChange={(e) => setTopK(e.target.value)}
