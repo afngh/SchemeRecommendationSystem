@@ -2,10 +2,10 @@
 
 ## Sprint 1: Authentication & Profile Sync (Clerk + Supabase)
 - [x] Initialize Clerk authentication in root `app/layout.js`
-- [ ] Implement passwordless email OTP verification flow
-- [ ] Implement Google Login flow
-- [ ] Set up Supabase DB integration with triggers to sync Clerk user profiles on initial login
-- [ ] Create persistent User Profile dashboard inside user preferences
+- [x] Implement passwordless email OTP verification flow
+- [x] Implement Google Login flow
+- [x] Set up Supabase DB integration with triggers to sync Clerk user profiles on initial login
+- [x] Create persistent User Profile dashboard inside user preferences
 
 ## Sprint 2: Next-Gen Citizen Main Dashboard (Search & Recommendations)
 - [ ] Build modernized layout with Announcement Banner, animated Hero section, and PixelDecoration elements
