@@ -343,6 +343,34 @@ export default function ProfilePage() {
                 Configure Account Settings
               </Link>
             </div>
+
+            {/* Platform Integrations Box */}
+            <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6 space-y-4">
+              <h3 className="text-md font-bold text-[#111827]">
+                Integrations & Access
+              </h3>
+              <p className="text-xs text-[#4b5563]">
+                Expand your discovery capabilities with background alerts and developer access endpoints.
+              </p>
+              
+              <div className="space-y-2 pt-2">
+                <Link
+                  href="/delivery"
+                  className="w-full inline-flex items-center justify-between rounded-md border border-[#e5e7eb] hover:border-[#111827] bg-[#f9fafb] hover:bg-white text-[#111827] px-4 py-2.5 text-xs font-semibold transition-all shadow-2xs"
+                >
+                  <span>Omnichannel Alert Delivery</span>
+                  <span className="text-[10px] bg-indigo-50 text-[#4f46e5] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Configure</span>
+                </Link>
+                
+                <Link
+                  href="/developer"
+                  className="w-full inline-flex items-center justify-between rounded-md border border-[#e5e7eb] hover:border-[#111827] bg-[#f9fafb] hover:bg-white text-[#111827] px-4 py-2.5 text-xs font-semibold transition-all shadow-2xs"
+                >
+                  <span>Developer API Portal</span>
+                  <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Access</span>
+                </Link>
+              </div>
+            </div>
           </div>
 
         </div>

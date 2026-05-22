@@ -6,6 +6,7 @@ import {
   HelpCircle, ExternalLink, RefreshCw, Layers, Settings, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
+import { UserButton } from '@clerk/nextjs';
 
 export default function GovDashboardPage() {
   // --- States for Risk Summary ---
@@ -151,24 +152,36 @@ export default function GovDashboardPage() {
       {/* Top Navbar */}
       <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <ShieldAlert className="h-5 w-5 text-[#4f46e5]" />
-            <span className="text-lg font-bold tracking-tight">SchemeLens Auditor</span>
-          </Link>
-          
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/recommend" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-              Find Schemes
+          <div className="flex items-center gap-6">
+            <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+              <ShieldAlert className="h-5 w-5 text-[#4f46e5]" />
+              <span className="text-lg font-bold tracking-tight">SchemeLens Auditor</span>
             </Link>
-            <Link href="/gov/dashboard" className="text-[#111827] font-semibold">
-              Government Dashboard
-            </Link>
-            <Link href="/top-rated" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-              Top Rated
-            </Link>
-            <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-              Preferences
-            </Link>
+            
+            <div className="hidden md:flex items-center gap-6 text-sm font-medium ml-4">
+              <Link href="/recommend" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+                Find Schemes
+              </Link>
+              <Link href="/gov/dashboard" className="text-[#111827] font-semibold">
+                Government Dashboard
+              </Link>
+              <Link href="/top-rated" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+                Top Rated
+              </Link>
+              <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+                Alert Delivery
+              </Link>
+              <Link href="/developer" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+                Developer Portal
+              </Link>
+              <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+                Preferences
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </header>

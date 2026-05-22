@@ -189,11 +189,14 @@ export default function RecommendPage() {
             <Link href="/gov/dashboard" className="text-[#4b5563] hover:text-[#111827] transition-colors">
               Government Dashboard
             </Link>
-            <Link href="/developer" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-              Developer Portal
-            </Link>
             <Link href="/top-rated" className="text-[#4b5563] hover:text-[#111827] transition-colors">
               Top Rated
+            </Link>
+            <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Alert Delivery
+            </Link>
+            <Link href="/developer" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Developer Portal
             </Link>
             <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
               Preferences
@@ -523,9 +526,9 @@ export default function RecommendPage() {
                           href={scheme.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-[#e5e7eb] hover:bg-[#f9fafb] text-[#111827] px-3.5 py-1.5 text-xs font-semibold transition-all"
+                          className="inline-flex items-center justify-center gap-1 rounded-md border border-[#f3f4f6] bg-[#f9fafb] hover:bg-[#f3f4f6] text-[#374151] hover:text-[#111827] px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider transition-all"
                         >
-                          Official Details <ExternalLink className="h-3.5 w-3.5 text-[#6b7280]" />
+                          Official Portal <ExternalLink className="h-3 w-3 text-[#6b7280]" />
                         </a>
                       )}
                     </div>

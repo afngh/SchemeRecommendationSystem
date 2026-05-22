@@ -28,6 +28,12 @@ export default function Home() {
             <Link href="/top-rated" className="text-[#4b5563] hover:text-[#111827] transition-colors">
               Top Rated
             </Link>
+            <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Alert Delivery
+            </Link>
+            <Link href="/developer" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Developer Portal
+            </Link>
             <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
               Preferences
             </Link>
@@ -215,7 +221,7 @@ export default function Home() {
           <div className="flex gap-4">
             <Link href="/recommend" className="hover:underline">Semantic Search</Link>
             <Link href="/gov/dashboard" className="hover:underline">Policy Risk Portal</Link>
-            <Link href="/about" className="hover:underline">How It Works</Link>
+            <Link href="/recommend" className="hover:underline">How It Works</Link>
           </div>
         </div>
       </footer>
