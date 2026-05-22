@@ -436,7 +436,6 @@ export default function RecommendPage() {
                 ))}
               </div>
             )}
-
             {/* Results matched lists */}
             <div className="space-y-6">
               {results.map((scheme, index) => {
@@ -447,59 +446,52 @@ export default function RecommendPage() {
                 const matchPercentage = Math.round(Math.max(0, Math.min(100, (1 - rawScore) * 100)));
 
                 return (
-                  <div key={scheme.scheme_id || index} className="bg-white border border-[#e5e7eb] rounded-xl p-6 sm:p-8 space-y-4 hover:shadow-xs transition-shadow">
+                  <div key={scheme.scheme_id || index} className="bg-white border border-[#f3f4f6] rounded-xl p-6 hover:border-[#e5e7eb] hover:shadow-xs transition-all duration-200">
                     
-                    {/* Category & Score Header */}
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="bg-[#f9fafb] border border-[#e5e7eb] text-[#111827] text-2xs font-semibold px-2.5 py-1 rounded-md">
-                          {scheme.category || 'Welfare'}
-                        </span>
-                        {scheme.tags && scheme.tags.split(',').slice(0, 3).map(tag => (
-                          <span key={tag} className="text-[#4b5563] text-3xs font-medium bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded">
-                            {tag.trim()}
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="bg-[#f3f4f6] text-[#374151] text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                            {scheme.category || 'Welfare'}
                           </span>
-                        ))}
+                          {scheme.tags && scheme.tags.split(',').slice(0, 2).map(tag => (
+                            <span key={tag} className="text-[#6b7280] text-[10px] font-medium bg-[#f9fafb] border border-[#f3f4f6] px-2 py-0.5 rounded-md">
+                              {tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+                        <h4 className="text-base font-bold text-[#111827] tracking-tight leading-snug">
+                          {scheme.title}
+                        </h4>
                       </div>
                       
                       {scheme.score !== undefined && (
-                        <span className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-2xs font-bold px-2 py-0.5 rounded-full">
-                          {matchPercentage}% Semantic Match
-                        </span>
+                        <div className="shrink-0 flex items-center gap-1.5 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] text-xs font-semibold px-3 py-1 rounded-full">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
+                          {matchPercentage}% Match
+                        </div>
                       )}
                     </div>
 
-                    {/* Scheme Title */}
-                    <div>
-                      <h4 className="text-lg font-bold text-[#111827] leading-snug">
-                        {scheme.title}
-                      </h4>
-                    </div>
+                    {/* Description */}
+                    <p className="text-xs text-[#4b5563] leading-relaxed mt-4 font-normal whitespace-pre-wrap">
+                      {scheme.description}
+                    </p>
 
-                    {/* Scheme Description */}
-                    <div>
-                      <p className="text-xs text-[#4b5563] leading-relaxed whitespace-pre-wrap">
-                        {scheme.description}
-                      </p>
-                    </div>
-
-                    <hr className="border-[#e5e7eb]" />
-
-                    {/* Rating Widget & Link buttons */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-1">
-                      
-                      {/* Star Rating Widget */}
-                      <div className="flex flex-col gap-1.5">
+                    {/* Footer */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-5 mt-5 border-t border-[#f3f4f6]">
+                      {/* Rating Widget */}
+                      <div className="flex items-center">
                         {activeRatingCard === scheme.scheme_id ? (
-                          <div className="space-y-3 bg-[#f9fafb] p-3 rounded-lg border border-[#e5e7eb] max-w-sm">
-                            <span className="block text-2xs font-semibold text-[#111827]">Submit Scheme Rating</span>
-                            <div className="flex items-center gap-1">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 bg-[#f9fafb] border border-[#e5e7eb] p-2 rounded-lg w-full sm:w-auto">
+                            <div className="flex items-center gap-1 shrink-0 px-1">
                               {[1, 2, 3, 4, 5].map(starVal => (
                                 <button
                                   key={starVal}
                                   type="button"
                                   onClick={() => setRatingValue(starVal)}
-                                  className="focus:outline-none"
+                                  className="focus:outline-none transition-transform hover:scale-110"
                                 >
                                   <Star className={`h-4.5 w-4.5 ${starVal <= ratingValue ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
                                 </button>
@@ -509,29 +501,29 @@ export default function RecommendPage() {
                               type="text"
                               value={ratingFeedback}
                               onChange={(e) => setRatingFeedback(e.target.value)}
-                              placeholder="Describe your eligibility experience (optional)..."
-                              className="w-full rounded-md border-[#e5e7eb] bg-white px-2 py-1.5 text-2xs text-[#111827]"
+                              placeholder="Add optional feedback..."
+                              className="rounded border-[#e5e7eb] bg-white px-2 py-1 text-3xs text-[#111827] w-full sm:w-48 focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5]"
                             />
-                            <div className="flex gap-2 justify-end">
+                            <div className="flex gap-1.5 justify-end">
                               <button
                                 type="button"
                                 onClick={() => setActiveRatingCard(null)}
-                                className="text-3xs font-semibold text-[#4b5563] hover:text-[#111827] px-2 py-1"
+                                className="text-3xs font-semibold text-[#4b5563] hover:text-[#111827] px-2 py-1 rounded"
                               >
                                 Cancel
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleRateScheme(scheme.scheme_id)}
-                                className="bg-[#111827] text-white text-3xs font-semibold px-3 py-1 rounded"
+                                className="bg-[#111827] hover:bg-[#1f2937] text-white text-3xs font-semibold px-2.5 py-1 rounded transition-colors"
                               >
-                                Submit Rating
+                                Submit
                               </button>
                             </div>
                           </div>
                         ) : ratingStatus[scheme.scheme_id] === 'success' ? (
-                          <span className="text-2xs font-semibold text-emerald-600">
-                            Thank you for rating this scheme!
+                          <span className="text-2xs font-semibold text-emerald-600 flex items-center gap-1.5">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Feedback recorded!
                           </span>
                         ) : (
                           <button
@@ -541,25 +533,24 @@ export default function RecommendPage() {
                               setRatingValue(5);
                               setRatingFeedback('');
                             }}
-                            className="inline-flex items-center gap-1.5 text-2xs font-semibold text-[#4b5563] hover:text-[#4f46e5] transition-colors text-left"
+                            className="inline-flex items-center gap-1.5 text-2xs font-medium text-[#4b5563] hover:text-[#4f46e5] transition-colors"
                           >
-                            <Star className="h-4 w-4" /> Rate Scheme Match Experience
+                            <Star className="h-4 w-4" /> Rate matching accuracy
                           </button>
                         )}
                       </div>
 
-                      {/* Official Link Application Button */}
+                      {/* Official Link Button */}
                       {scheme.link && (
                         <a
                           href={scheme.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-[#e5e7eb] hover:bg-[#f9fafb] text-[#111827] px-4 py-2 text-xs font-semibold transition-all shadow-2xs"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-[#e5e7eb] hover:bg-[#f9fafb] text-[#111827] px-3.5 py-1.5 text-xs font-semibold transition-all"
                         >
-                          Official Scheme Details <ExternalLink className="h-3.5 w-3.5" />
+                          Official Details <ExternalLink className="h-3.5 w-3.5 text-[#6b7280]" />
                         </a>
                       )}
-
                     </div>
 
                   </div>

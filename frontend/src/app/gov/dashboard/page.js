@@ -436,51 +436,64 @@ export default function GovDashboardPage() {
 
               <div className="space-y-4">
                 {sandboxResults.map((scheme, idx) => {
-                  const riskLevel = getRiskColor(scheme.final_composite_score);
                   return (
-                    <div key={scheme.scheme_id || idx} className={`bg-[#f9fafb] border border-[#e5e7eb] rounded-xl p-5 ${riskLevel.border} space-y-3`}>
+                    <div key={scheme.scheme_id || idx} className="bg-white border border-[#f3f4f6] rounded-xl p-6 hover:border-[#e5e7eb] transition-all duration-200 space-y-4">
+                      
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-2xs font-bold uppercase tracking-wider text-[#4b5563]">{scheme.category}</span>
-                        <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${riskLevel.badge}`}>
-                          Composite risk: {scheme.final_composite_score}
+                        <span className="bg-[#f3f4f6] text-[#374151] text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          {scheme.category}
                         </span>
+                        
+                        <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                          scheme.final_composite_score >= 3.0 
+                            ? 'bg-red-50 text-red-700 border border-red-200' 
+                            : scheme.final_composite_score >= 2.0 
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${
+                            scheme.final_composite_score >= 3.0 ? 'bg-red-500' : scheme.final_composite_score >= 2.0 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}></span>
+                          Composite Score: {scheme.final_composite_score}
+                        </div>
                       </div>
 
-                      <h4 className="text-md font-bold text-[#111827]">{scheme.title}</h4>
+                      <h4 className="text-base font-bold text-[#111827] tracking-tight">{scheme.title}</h4>
 
                       {/* Custom Justification Alert panel */}
-                      <div className="bg-white border border-[#e5e7eb] rounded p-3.5 text-xs text-[#4b5563] leading-relaxed">
-                        <span className="block font-bold text-[#111827] text-2xs uppercase tracking-wider mb-1 text-red-600">✦ Policy auditor audit rationale</span>
+                      <div className="bg-[#f9fafb] border border-[#f3f4f6] rounded-lg p-4 text-xs text-[#4b5563] leading-relaxed">
+                        <span className="block font-bold text-[#111827] text-2xs uppercase tracking-wider mb-1.5 text-[#4f46e5]">Policy Auditor Audit Rationale</span>
                         <p>{scheme.justification}</p>
                       </div>
 
                       {/* Score break-downs */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-3xs font-semibold uppercase tracking-wider text-[#4b5563] pt-1">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-[9px] uppercase font-bold text-[#6b7280] pt-2 border-t border-[#f3f4f6]">
                         <div>
-                          <span>Accessibility:</span>
+                          <span>Accessibility</span>
                           <span className="block text-xs font-bold text-[#111827] mt-0.5">{scheme.accessibility_risk}</span>
                         </div>
                         <div>
-                          <span>Bureaucracy:</span>
+                          <span>Bureaucracy</span>
                           <span className="block text-xs font-bold text-[#111827] mt-0.5">{scheme.bureaucratic_risk}</span>
                         </div>
                         <div>
-                          <span>Market Dist:</span>
+                          <span>Market Dist</span>
                           <span className="block text-xs font-bold text-[#111827] mt-0.5">{scheme.market_distortion_risk}</span>
                         </div>
                         <div>
-                          <span>Ecological:</span>
+                          <span>Ecological</span>
                           <span className="block text-xs font-bold text-[#111827] mt-0.5">{scheme.ecological_risk}</span>
                         </div>
                         <div>
-                          <span>Social Friction:</span>
+                          <span>Social Friction</span>
                           <span className="block text-xs font-bold text-[#111827] mt-0.5">{scheme.social_friction_risk}</span>
                         </div>
                         <div>
-                          <span>Concern Score:</span>
+                          <span>Concern Score</span>
                           <span className="block text-xs font-bold text-[#4f46e5] mt-0.5">{scheme.custom_risk_score}</span>
                         </div>
                       </div>
+
                     </div>
                   );
                 })}
@@ -562,99 +575,99 @@ export default function GovDashboardPage() {
           ) : riskySchemes.length > 0 ? (
             <div className="space-y-4">
               {riskySchemes.map((scheme, index) => {
-                const colors = getRiskColor(scheme.composite_risk_score);
-                
                 return (
-                  <div key={scheme.scheme_id || index} className={`bg-white border border-[#e5e7eb] rounded-xl p-5 sm:p-6 ${colors.border} flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6`}>
+                  <div key={scheme.scheme_id || index} className="bg-white border border-[#f3f4f6] rounded-xl p-6 hover:border-[#e5e7eb] hover:shadow-xs transition-all duration-200 flex flex-col md:flex-row md:items-start justify-between gap-6">
                     
-                    {/* Left: Titles */}
-                    <div className="flex-1 space-y-2">
+                    {/* Left: Titles & Categories info */}
+                    <div className="flex-1 space-y-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="bg-[#f9fafb] border border-[#e5e7eb] text-[#111827] text-2xs font-semibold px-2 py-0.5 rounded">
+                        <span className="bg-[#f3f4f6] text-[#374151] text-[10px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider">
                           {scheme.category}
                         </span>
-                        {scheme.tags && scheme.tags.split(',').slice(0, 3).map(tag => (
-                          <span key={tag} className="text-[#4b5563] text-3xs font-medium bg-gray-50 border border-gray-100 px-1 py-0.5 rounded">
+                        {scheme.tags && scheme.tags.split(',').slice(0, 2).map(tag => (
+                          <span key={tag} className="text-[#6b7280] text-[10px] font-medium bg-[#f9fafb] border border-[#f3f4f6] px-2 py-0.5 rounded-md">
                             {tag.trim()}
                           </span>
                         ))}
                       </div>
-                      <h4 className="text-md font-bold text-[#111827] leading-snug">{scheme.title}</h4>
                       
-                      {scheme.link && (
-                        <a 
-                          href={scheme.link} target="_blank" rel="noopener noreferrer" 
-                          className="inline-flex items-center gap-1 text-2xs font-semibold text-[#4f46e5] hover:underline pt-1"
-                        >
-                          Visit myscheme registry <ExternalLink className="h-3 w-3" />
-                        </a>
-                      )}
+                      <div>
+                        <h4 className="text-base font-bold text-[#111827] tracking-tight leading-snug">{scheme.title}</h4>
+                        {scheme.link && (
+                          <a 
+                            href={scheme.link} target="_blank" rel="noopener noreferrer" 
+                            className="inline-flex items-center gap-1 text-2xs font-semibold text-[#4f46e5] hover:underline mt-2"
+                          >
+                            Open in Official Portal <ExternalLink className="h-3 w-3 text-[#6b7280]" />
+                          </a>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Right: Scores & horizontal bars */}
-                    <div className="w-full lg:w-80 space-y-3 bg-[#f9fafb] p-4 rounded-lg border border-[#e5e7eb]">
+                    {/* Right: Scores & horizontal mini risk bars */}
+                    <div className="w-full md:w-72 shrink-0 space-y-3 bg-[#f9fafb] border border-[#f3f4f6] p-4 rounded-lg">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xs font-bold uppercase text-[#4b5563]">Policy Risk Scores</span>
-                        <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${colors.badge}`}>
-                          Composite Score: {scheme.composite_risk_score}
-                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#4b5563]">Policy Friction</span>
+                        
+                        <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                          scheme.composite_risk_score >= 3.0 
+                            ? 'bg-red-50 text-red-700 border border-red-200' 
+                            : scheme.composite_risk_score >= 2.0 
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        }`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${
+                            scheme.composite_risk_score >= 3.0 ? 'bg-red-500' : scheme.composite_risk_score >= 2.0 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}></span>
+                          {scheme.composite_risk_score} Score
+                        </div>
                       </div>
 
                       {/* Horizontal Bars */}
-                      <div className="space-y-1.5 text-3xs uppercase font-semibold text-[#4b5563]">
+                      <div className="space-y-2 text-[9px] uppercase font-bold text-[#4b5563] tracking-wide pt-1">
                         {/* Bar 1 */}
-                        <div className="space-y-0.5">
-                          <div className="flex justify-between">
-                            <span>Accessibility</span>
-                            <span className="font-mono">{scheme.accessibility_risk}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="w-20 truncate">Accessibility</span>
+                          <div className="flex-1 bg-gray-200 h-1.5 rounded-full overflow-hidden">
                             <div className="bg-[#4f46e5] h-full rounded-full" style={{ width: `${scheme.accessibility_risk * 10}%` }}></div>
                           </div>
+                          <span className="font-mono text-2xs w-6 text-right">{scheme.accessibility_risk}</span>
                         </div>
 
                         {/* Bar 2 */}
-                        <div className="space-y-0.5">
-                          <div className="flex justify-between">
-                            <span>Bureaucratic</span>
-                            <span className="font-mono">{scheme.bureaucratic_risk}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="w-20 truncate">Bureaucracy</span>
+                          <div className="flex-1 bg-gray-200 h-1.5 rounded-full overflow-hidden">
                             <div className="bg-[#4f46e5] h-full rounded-full" style={{ width: `${scheme.bureaucratic_risk * 10}%` }}></div>
                           </div>
+                          <span className="font-mono text-2xs w-6 text-right">{scheme.bureaucratic_risk}</span>
                         </div>
 
                         {/* Bar 3 */}
-                        <div className="space-y-0.5">
-                          <div className="flex justify-between">
-                            <span>Market Dist</span>
-                            <span className="font-mono">{scheme.market_distortion_risk}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="w-20 truncate">Market Dist</span>
+                          <div className="flex-1 bg-gray-200 h-1.5 rounded-full overflow-hidden">
                             <div className="bg-[#4f46e5] h-full rounded-full" style={{ width: `${scheme.market_distortion_risk * 10}%` }}></div>
                           </div>
+                          <span className="font-mono text-2xs w-6 text-right">{scheme.market_distortion_risk}</span>
                         </div>
 
                         {/* Bar 4 */}
-                        <div className="space-y-0.5">
-                          <div className="flex justify-between">
-                            <span>Ecological</span>
-                            <span className="font-mono">{scheme.ecological_risk}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="w-20 truncate">Ecological</span>
+                          <div className="flex-1 bg-gray-200 h-1.5 rounded-full overflow-hidden">
                             <div className="bg-[#4f46e5] h-full rounded-full" style={{ width: `${scheme.ecological_risk * 10}%` }}></div>
                           </div>
+                          <span className="font-mono text-2xs w-6 text-right">{scheme.ecological_risk}</span>
                         </div>
 
                         {/* Bar 5 */}
-                        <div className="space-y-0.5">
-                          <div className="flex justify-between">
-                            <span>Social Exclusion</span>
-                            <span className="font-mono">{scheme.social_friction_risk}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 h-1 rounded-full overflow-hidden">
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="w-20 truncate">Social Excl</span>
+                          <div className="flex-1 bg-gray-200 h-1.5 rounded-full overflow-hidden">
                             <div className="bg-[#4f46e5] h-full rounded-full" style={{ width: `${scheme.social_friction_risk * 10}%` }}></div>
                           </div>
+                          <span className="font-mono text-2xs w-6 text-right">{scheme.social_friction_risk}</span>
                         </div>
                       </div>
                     </div>
