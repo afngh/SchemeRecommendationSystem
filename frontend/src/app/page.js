@@ -1,6 +1,6 @@
 'use client';
 
-import { Show, UserButton, useAuth } from '@clerk/nextjs';
+import { UserButton, useAuth } from '@clerk/nextjs';
 import { Zap, Search, ShieldAlert, ChevronRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
@@ -40,30 +40,32 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Show when="signed-out">
-              <Link 
-                href="/sign-in" 
-                className="text-sm font-semibold text-[#4b5563] hover:text-[#111827] transition-colors px-3 py-1.5"
-              >
-                Log In
-              </Link>
-              <Link 
-                href="/sign-up" 
-                className="rounded-md bg-[#111827] hover:bg-[#1f2937] text-white text-xs font-semibold px-4 py-2 transition-all shadow-sm"
-              >
-                Register
-              </Link>
-            </Show>
-
-            <Show when="signed-in">
-              <Link 
-                href="/recommend" 
-                className="text-xs font-semibold text-[#4f46e5] border border-indigo-100 bg-indigo-50/50 rounded-md px-3 py-1.5 transition-all"
-              >
-                Dashboard
-              </Link>
-              <UserButton afterSignOutUrl="/" />
-            </Show>
+            {!isSignedIn ? (
+              <>
+                <Link 
+                  href="/sign-in" 
+                  className="text-sm font-semibold text-[#4b5563] hover:text-[#111827] transition-colors px-3 py-1.5"
+                >
+                  Log In
+                </Link>
+                <Link 
+                  href="/sign-up" 
+                  className="rounded-md bg-[#111827] hover:bg-[#1f2937] text-white text-xs font-semibold px-4 py-2 transition-all shadow-sm"
+                >
+                  Register
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/recommend" 
+                  className="text-xs font-semibold text-[#4f46e5] border border-indigo-100 bg-indigo-50/50 rounded-md px-3 py-1.5 transition-all"
+                >
+                  Dashboard
+                </Link>
+                <UserButton afterSignOutUrl="/" />
+              </>
+            )}
           </div>
         </div>
       </nav>

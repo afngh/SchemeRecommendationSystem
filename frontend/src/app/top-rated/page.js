@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Show, UserButton } from '@clerk/nextjs';
+import { UserButton } from '@clerk/nextjs';
 import { Star, ArrowLeft, ExternalLink, HelpCircle, AlertTriangle, Zap } from 'lucide-react';
 import Link from 'next/link';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Show, UserButton, useUser } from '@clerk/nextjs';
+import { UserButton, useUser } from '@clerk/nextjs';
 import { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/utils/supabase';
 import { Zap, Search, Settings, Star, AlertTriangle, ArrowRight, ExternalLink, HelpCircle, Send } from 'lucide-react';
@@ -65,8 +65,12 @@ export default function RecommendPage() {
       }
     }
 
-    if (isUserLoaded && user) {
-      loadDemographics();
+    if (isUserLoaded) {
+      if (user) {
+        loadDemographics();
+      } else {
+        setDemographicsLoading(false);
+      }
     }
   }, [user, isUserLoaded]);
 

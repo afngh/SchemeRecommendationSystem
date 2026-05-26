@@ -61,8 +61,12 @@ export default function DeliveryPage() {
       }
     }
 
-    if (isUserLoaded && user) {
-      loadSettings();
+    if (isUserLoaded) {
+      if (user) {
+        loadSettings();
+      } else {
+        setLoading(false);
+      }
     }
   }, [user, isUserLoaded]);
 
@@ -75,7 +79,10 @@ export default function DeliveryPage() {
   // Save Settings Trigger
   const handleSaveSettings = async (e) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      setStatus({ type: 'error', message: 'You must be logged in to save subscription settings.' });
+      return;
+    }
 
     try {
       setSaving(true);

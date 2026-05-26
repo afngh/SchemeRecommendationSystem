@@ -57,8 +57,12 @@ export default function DeveloperPage() {
       }
     }
 
-    if (isUserLoaded && user) {
-      loadKeys();
+    if (isUserLoaded) {
+      if (user) {
+        loadKeys();
+      } else {
+        setLoading(false);
+      }
     }
   }, [user, isUserLoaded]);
 
@@ -126,7 +130,11 @@ export default function DeveloperPage() {
   // Generate a New API Key
   const handleGenerateKey = async (e) => {
     e.preventDefault();
-    if (!newKeyName.trim() || !user) return;
+    if (!newKeyName.trim()) return;
+    if (!user) {
+      alert('You must be logged in to generate API credentials.');
+      return;
+    }
 
     try {
       setGenerating(true);

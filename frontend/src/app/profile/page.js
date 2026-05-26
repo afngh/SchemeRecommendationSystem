@@ -75,15 +75,22 @@ export default function ProfilePage() {
       }
     }
 
-    if (isLoaded && user) {
-      loadProfile();
+    if (isLoaded) {
+      if (user) {
+        loadProfile();
+      } else {
+        setLoading(false);
+      }
     }
   }, [user, isLoaded]);
 
   // Handle saving Supabase profile data
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user) {
+      setStatus({ type: 'error', message: 'You must be logged in to save profile preferences.' });
+      return;
+    }
     if (!isSupabaseConfigured) {
       setStatus({
         type: 'error',
@@ -305,24 +312,42 @@ export default function ProfilePage() {
 
           {/* Clerk Account Manager Panel */}
           <div className="space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6">
-              <div className="flex flex-col items-center text-center">
-                <img 
-                  src={user.imageUrl} 
-                  alt="Profile Avatar" 
-                  className="h-20 w-20 rounded-full border-2 border-[#4f46e5] shadow-inner mb-4"
-                />
-                <h3 className="text-lg font-bold text-[#111827]">
-                  {user.fullName || 'User Profile'}
-                </h3>
-                <p className="text-xs text-[#4b5563] mb-4">
-                  {user.primaryEmailAddress?.emailAddress}
-                </p>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-[#e5e7eb] px-3 py-1 text-2xs font-semibold text-[#111827]">
-                  Authenticated via Clerk
+            {user ? (
+              <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6">
+                <div className="flex flex-col items-center text-center">
+                  <img 
+                    src={user.imageUrl} 
+                    alt="Profile Avatar" 
+                    className="h-20 w-20 rounded-full border-2 border-[#4f46e5] shadow-inner mb-4"
+                  />
+                  <h3 className="text-lg font-bold text-[#111827]">
+                    {user.fullName || 'User Profile'}
+                  </h3>
+                  <p className="text-xs text-[#4b5563] mb-4">
+                    {user.primaryEmailAddress?.emailAddress}
+                  </p>
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-[#e5e7eb] px-3 py-1 text-2xs font-semibold text-[#111827]">
+                    Authenticated via Clerk
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6 text-center space-y-4">
+                <div className="h-20 w-20 rounded-full bg-indigo-50 text-[#4f46e5] flex items-center justify-center mx-auto mb-2">
+                  <Zap className="h-10 w-10 animate-pulse" />
+                </div>
+                <h3 className="text-lg font-bold text-[#111827]">Anonymous Session</h3>
+                <p className="text-xs text-[#4b5563]">
+                  Log in to synchronize your demographic profile settings and subscribe to automatic alerts.
+                </p>
+                <Link
+                  href="/sign-in"
+                  className="w-full inline-flex items-center justify-center rounded-md bg-[#111827] hover:bg-[#1f2937] text-white py-2 text-xs font-semibold transition-all shadow-sm"
+                >
+                  Sign In with Clerk
+                </Link>
+              </div>
+            )}
 
             <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6">
               <h3 className="text-md font-bold text-[#111827] mb-3">
@@ -376,24 +401,26 @@ export default function ProfilePage() {
         </div>
 
         {/* Embedded Full Clerk UserProfile Component at Bottom */}
-        <div id="clerk-profile-container" className="mt-16 bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6 sm:p-8">
-          <h2 className="text-2xl font-bold text-[#111827] mb-6 border-b border-[#e5e7eb] pb-4">
-            Account Credential Settings
-          </h2>
-          <div className="flex justify-center">
-            <UserProfile 
-              routing="hash"
-              appearance={{
-                elements: {
-                  card: 'shadow-none border-none p-0 w-full',
-                  navbar: 'border-r border-[#e5e7eb]',
-                  scrollBox: 'bg-white',
-                  formButtonPrimary: 'bg-[#4f46e5] hover:bg-[#4338ca] text-white text-xs font-semibold rounded-md transition-all py-2 normal-case',
-                }
-              }}
-            />
+        {user && (
+          <div id="clerk-profile-container" className="mt-16 bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6 sm:p-8">
+            <h2 className="text-2xl font-bold text-[#111827] mb-6 border-b border-[#e5e7eb] pb-4">
+              Account Credential Settings
+            </h2>
+            <div className="flex justify-center">
+              <UserProfile 
+                routing="hash"
+                appearance={{
+                  elements: {
+                    card: 'shadow-none border-none p-0 w-full',
+                    navbar: 'border-r border-[#e5e7eb]',
+                    scrollBox: 'bg-white',
+                    formButtonPrimary: 'bg-[#4f46e5] hover:bg-[#4338ca] text-white text-xs font-semibold rounded-md transition-all py-2 normal-case',
+                  }
+                }}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
