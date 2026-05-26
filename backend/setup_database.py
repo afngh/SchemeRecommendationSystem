@@ -5,9 +5,15 @@ import uuid
 
 # Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SCHEMES_DIR = os.path.join(BASE_DIR, '..', 'schemes')
-MASTER_CSV_PATH = os.path.join(BASE_DIR, '..', 'data', 'all_schemes_master.csv')
-DB_PATH = os.path.join(BASE_DIR, '..', 'data', 'schemelens.db')
+if os.path.exists(os.path.join(BASE_DIR, '..', 'data')):
+    DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
+    SCHEMES_DIR = os.path.join(BASE_DIR, '..', 'schemes')
+else:
+    DATA_DIR = os.path.join(BASE_DIR, 'data')
+    SCHEMES_DIR = os.path.join(BASE_DIR, 'schemes')
+
+MASTER_CSV_PATH = os.path.join(DATA_DIR, 'all_schemes_master.csv')
+DB_PATH = os.path.join(DATA_DIR, 'schemelens.db')
 
 def merge_and_clean_csvs():
     print("Gathering and merging all category CSVs...")

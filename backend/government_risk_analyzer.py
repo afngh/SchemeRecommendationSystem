@@ -4,7 +4,13 @@ import pandas as pd
 import os
 
 # Configuration
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'schemelens.db')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if os.path.exists(os.path.join(BASE_DIR, '..', 'data')):
+    DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
+else:
+    DATA_DIR = os.path.join(BASE_DIR, 'data')
+
+DB_PATH = os.path.join(DATA_DIR, 'schemelens.db')
 
 class RiskAnalyzer:
     def __init__(self):
