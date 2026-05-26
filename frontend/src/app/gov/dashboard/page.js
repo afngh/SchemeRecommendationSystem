@@ -8,6 +8,8 @@ import {
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 export default function GovDashboardPage() {
   // --- States for Risk Summary ---
   const [summary, setSummary] = useState(null);
@@ -54,7 +56,7 @@ export default function GovDashboardPage() {
     try {
       setSummaryLoading(true);
       setSummaryError('');
-      const res = await fetch('http://127.0.0.1:8000/api/gov/risk-summary');
+      const res = await fetch(`${BACKEND_URL}/api/gov/risk-summary`);
       if (!res.ok) {
         throw new Error('Failed to fetch risk summary metrics.');
       }
@@ -82,7 +84,7 @@ export default function GovDashboardPage() {
         params.append('category', category);
       }
 
-      const res = await fetch(`http://127.0.0.1:8000/api/gov/risky-schemes?${params}`);
+      const res = await fetch(`${BACKEND_URL}/api/gov/risky-schemes?${params}`);
       if (!res.ok) {
         throw new Error('Failed to fetch risky schemes browser details.');
       }
@@ -107,7 +109,7 @@ export default function GovDashboardPage() {
       setSandboxResults([]);
       setExtractedTags('');
 
-      const res = await fetch('http://127.0.0.1:8000/api/gov/custom-risk', {
+      const res = await fetch(`${BACKEND_URL}/api/gov/custom-risk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

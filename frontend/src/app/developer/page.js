@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 export default function DeveloperPage() {
   const { user, isLoaded: isUserLoaded } = useUser();
   const [loading, setLoading] = useState(true);
@@ -86,7 +88,7 @@ export default function DeveloperPage() {
     setApiResponse(null);
     setApiResponseStatus(null);
 
-    const baseUrl = 'http://127.0.0.1:8000';
+    const baseUrl = BACKEND_URL;
     let url = baseUrl;
     let options = {
       headers: {
@@ -442,7 +444,7 @@ export default function DeveloperPage() {
             </div>
 
             <div className="text-[10px] text-gray-500 border-t border-gray-800 pt-4 mt-4">
-              Base Endpoint: <span className="text-gray-400 font-bold">http://127.0.0.1:8000</span>
+              Base Endpoint: <span className="text-gray-400 font-bold">{BACKEND_URL}</span>
             </div>
           </div>
 

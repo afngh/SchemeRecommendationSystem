@@ -5,6 +5,8 @@ import { UserButton } from '@clerk/nextjs';
 import { Star, ArrowLeft, ExternalLink, HelpCircle, AlertTriangle, Zap } from 'lucide-react';
 import Link from 'next/link';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 export default function TopRatedPage() {
   const [schemes, setSchemes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +18,7 @@ export default function TopRatedPage() {
       try {
         setLoading(true);
         setError('');
-        const response = await fetch('http://127.0.0.1:8000/api/top-rated?limit=15');
+        const response = await fetch(`${BACKEND_URL}/api/top-rated?limit=15`);
         
         if (!response.ok) {
           throw new Error('Failed to retrieve top-rated welfare schemes.');
@@ -26,7 +28,7 @@ export default function TopRatedPage() {
         setSchemes(data.top_rated || []);
       } catch (err) {
         console.error('Error fetching top rated schemes:', err);
-        setError(err.message || 'Ensure your backend API service is running on http://127.0.0.1:8000.');
+        setError(err.message || `Ensure your backend API service is running on ${BACKEND_URL}.`);
       } finally {
         setLoading(false);
       }

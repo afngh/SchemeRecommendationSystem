@@ -6,6 +6,8 @@ import { supabase, isSupabaseConfigured } from '@/utils/supabase';
 import { Zap, Search, Settings, Star, AlertTriangle, ArrowRight, ExternalLink, HelpCircle, Send } from 'lucide-react';
 import Link from 'next/link';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
 export default function RecommendPage() {
   const { user, isLoaded: isUserLoaded } = useUser();
   const [query, setQuery] = useState('');
@@ -100,8 +102,8 @@ export default function RecommendPage() {
       }
 
       const endpoint = searchMode === 'smart' 
-        ? 'http://127.0.0.1:8000/api/recommend/premium' 
-        : 'http://127.0.0.1:8000/api/recommend';
+        ? `${BACKEND_URL}/api/recommend/premium` 
+        : `${BACKEND_URL}/api/recommend`;
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -137,7 +139,7 @@ export default function RecommendPage() {
     try {
       setRatingStatus({ ...ratingStatus, [schemeId]: 'submitting' });
 
-      const response = await fetch('http://127.0.0.1:8000/api/rate', {
+      const response = await fetch(`${BACKEND_URL}/api/rate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -368,7 +370,7 @@ export default function RecommendPage() {
                 <p className="font-semibold">Search Operation Failed</p>
                 <p className="mt-0.5">{error}</p>
                 <p className="mt-2 font-mono bg-white p-2 rounded border border-red-100 text-[10px]">
-                  Ensure your backend API microservice is active at `http://127.0.0.1:8000`. Run `uvicorn api:app --reload` inside the `backend` folder.
+                  Ensure your backend API microservice is active at `{BACKEND_URL}`. Run `uvicorn api:app --reload` inside the `backend` folder.
                 </p>
               </div>
             </div>
