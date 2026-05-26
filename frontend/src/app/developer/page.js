@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://schemerecommendationsystem-production.up.railway.app';
 
 export default function DeveloperPage() {
   const { user, isLoaded: isUserLoaded } = useUser();

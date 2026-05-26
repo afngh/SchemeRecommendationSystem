@@ -8,7 +8,7 @@ import {
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://schemerecommendationsystem-production.up.railway.app';
 
 export default function GovDashboardPage() {
   // --- States for Risk Summary ---
