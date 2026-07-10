@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { 
   ShieldAlert, BarChart3, Filter, Sliders, AlertTriangle, 
-  HelpCircle, ExternalLink, RefreshCw, Layers, Settings, ChevronRight
+  HelpCircle, ExternalLink, RefreshCw, Layers, Settings, ChevronRight, Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
@@ -56,11 +56,19 @@ export default function GovDashboardPage() {
     try {
       setSummaryLoading(true);
       setSummaryError('');
+      const startTime = Date.now();
       const res = await fetch(`${BACKEND_URL}/api/gov/risk-summary`);
       if (!res.ok) {
         throw new Error('Failed to fetch risk summary metrics.');
       }
-      const data = await res.ok ? await res.json() : null;
+      const data = res.ok ? await res.json() : null;
+
+      // Ensure loading state runs for at least 450ms for smooth transitions
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < 450) {
+        await new Promise(resolve => setTimeout(resolve, 450 - elapsedTime));
+      }
+
       setSummary(data);
     } catch (err) {
       console.error(err);
@@ -75,6 +83,7 @@ export default function GovDashboardPage() {
     try {
       setBrowserLoading(true);
       setBrowserError('');
+      const startTime = Date.now();
       
       const params = new URLSearchParams({
         limit: limit,
@@ -89,6 +98,13 @@ export default function GovDashboardPage() {
         throw new Error('Failed to fetch risky schemes browser details.');
       }
       const data = await res.json();
+
+      // Ensure loading state runs for at least 450ms for smooth transitions
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < 450) {
+        await new Promise(resolve => setTimeout(resolve, 450 - elapsedTime));
+      }
+
       setRiskySchemes(data.risky_schemes || []);
     } catch (err) {
       console.error(err);
@@ -108,6 +124,7 @@ export default function GovDashboardPage() {
       setSandboxError('');
       setSandboxResults([]);
       setExtractedTags('');
+      const startTime = Date.now();
 
       const res = await fetch(`${BACKEND_URL}/api/gov/custom-risk`, {
         method: 'POST',
@@ -131,6 +148,13 @@ export default function GovDashboardPage() {
       }
 
       const data = await res.json();
+
+      // Ensure loading state runs for at least 450ms for smooth transitions
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < 450) {
+        await new Promise(resolve => setTimeout(resolve, 450 - elapsedTime));
+      }
+
       setSandboxResults(data.results || []);
       setExtractedTags(data.extracted_tags || '');
     } catch (err) {
@@ -152,34 +176,29 @@ export default function GovDashboardPage() {
     <div className="min-h-screen bg-[#f9fafb] text-[#111827] flex flex-col font-sans">
       
       {/* Top Navbar */}
-      <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm">
+      <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm relative z-10 font-sans">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
-              <ShieldAlert className="h-5 w-5 text-[#4f46e5]" />
-              <span className="text-lg font-bold tracking-tight">SchemeLens Auditor</span>
+          <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <Zap className="h-5 w-5 text-[#4f46e5]" />
+            <span className="text-lg font-bold tracking-tight">SchemeLens</span>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <Link href="/recommend" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Find Schemes
             </Link>
-            
-            <div className="hidden md:flex items-center gap-6 text-sm font-medium ml-4">
-              <Link href="/recommend" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Find Schemes
-              </Link>
-              <Link href="/gov/dashboard" className="text-[#111827] font-semibold">
-                Government Dashboard
-              </Link>
-              <Link href="/top-rated" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Top Rated
-              </Link>
-              <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Alert Delivery
-              </Link>
-              <Link href="/developer" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Developer Portal
-              </Link>
-              <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Preferences
-              </Link>
-            </div>
+            <Link href="/gov/dashboard" className="text-[#111827] font-semibold">
+              Government Dashboard
+            </Link>
+            <Link href="/top-rated" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Top Rated
+            </Link>
+            <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Alert Delivery
+            </Link>
+            <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Preferences
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">
@@ -195,8 +214,8 @@ export default function GovDashboardPage() {
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-[#111827]">Policy Friction Risk Overview</h1>
-              <p className="text-xs text-[#4b5563] mt-1">Aggregated statistics mapping systematic barriers across 4,580 real Indian government welfare listings.</p>
+              <h1 className="text-2xl font-extrabold tracking-tight text-[#111827]">Welfare Accessibility & Difficulty Overview</h1>
+              <p className="text-xs text-[#4b5563] mt-1">View information about application red tape and barriers across 4,580 real government welfare schemes.</p>
             </div>
             <button 
               onClick={fetchSummary}
@@ -225,30 +244,30 @@ export default function GovDashboardPage() {
               
               {/* Card 1 */}
               <div className="bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-2xs">
-                <span className="block text-2xs font-semibold text-[#4b5563] uppercase tracking-wider">Total Scraped Policies</span>
+                <span className="block text-2xs font-semibold text-[#4b5563] uppercase tracking-wider">Total Schemes in Database</span>
                 <span className="block text-3xl font-extrabold text-[#111827] mt-2">{summary.overall.total_schemes}</span>
                 <span className="block text-3xs text-[#9ca3af] mt-1">Indexed from myScheme.gov.in</span>
               </div>
 
               {/* Card 2 */}
               <div className="bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-2xs">
-                <span className="block text-2xs font-semibold text-[#4b5563] uppercase tracking-wider">Avg Systematic Risk</span>
+                <span className="block text-2xs font-semibold text-[#4b5563] uppercase tracking-wider">Average Difficulty Score</span>
                 <span className="block text-3xl font-extrabold text-[#111827] mt-2">{summary.overall.overall_avg_risk} / 10.0</span>
-                <span className="block text-3xs text-[#9ca3af] mt-1">Based on composite NLP criteria</span>
+                <span className="block text-3xs text-[#9ca3af] mt-1">Based on system analysis of red tape and barriers</span>
               </div>
 
               {/* Card 3 */}
               <div className="bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-2xs border-l-4 border-l-red-500">
-                <span className="block text-2xs font-semibold text-red-700 uppercase tracking-wider">High Risk Schemes</span>
+                <span className="block text-2xs font-semibold text-red-700 uppercase tracking-wider">High Difficulty Schemes</span>
                 <span className="block text-3xl font-extrabold text-red-700 mt-2">{summary.overall.total_high_risk}</span>
-                <span className="block text-3xs text-[#9ca3af] mt-1">Severe exclusion or barrier threats (≥3.0)</span>
+                <span className="block text-3xs text-[#9ca3af] mt-1">Severe red tape or complex requirements (Score ≥3.0)</span>
               </div>
 
               {/* Card 4 */}
               <div className="bg-white border border-[#e5e7eb] rounded-xl p-5 shadow-2xs border-l-4 border-l-amber-500">
-                <span className="block text-2xs font-semibold text-amber-700 uppercase tracking-wider">Medium Risk Schemes</span>
+                <span className="block text-2xs font-semibold text-amber-700 uppercase tracking-wider">Medium Difficulty Schemes</span>
                 <span className="block text-3xl font-extrabold text-amber-700 mt-2">{summary.overall.total_medium_risk}</span>
-                <span className="block text-3xs text-[#9ca3af] mt-1">Moderate red tape & hurdles (2.0-2.99)</span>
+                <span className="block text-3xs text-[#9ca3af] mt-1">Moderate verification and hurdles (Score 2.0-2.99)</span>
               </div>
 
             </div>
@@ -259,7 +278,7 @@ export default function GovDashboardPage() {
         {summary && !summaryLoading && (
           <section className="space-y-4">
             <h2 className="text-lg font-bold text-[#111827] flex items-center gap-1.5">
-              <Layers className="h-5 w-5 text-[#4f46e5]" /> Category Friction breakdown
+              <Layers className="h-5 w-5 text-[#4f46e5]" /> Scheme Difficulty Breakdown by Category
             </h2>
             <div className="overflow-x-auto bg-white border border-[#e5e7eb] rounded-xl shadow-2xs">
               <table className="min-w-full divide-y divide-[#e5e7eb] text-left text-xs">
@@ -267,12 +286,12 @@ export default function GovDashboardPage() {
                   <tr>
                     <th className="px-6 py-3.5">Category Name</th>
                     <th className="px-6 py-3.5 text-center">Total Schemes</th>
-                    <th className="px-6 py-3.5 text-center">Avg Risk</th>
-                    <th className="px-6 py-3.5 text-center">Max Risk</th>
-                    <th className="px-6 py-3.5 text-center">Min Risk</th>
-                    <th className="px-6 py-3.5 text-center">🔴 High Risk</th>
-                    <th className="px-6 py-3.5 text-center">🟡 Med Risk</th>
-                    <th className="px-6 py-3.5 text-center">🟢 Low Risk</th>
+                    <th className="px-6 py-3.5 text-center">Avg Difficulty</th>
+                    <th className="px-6 py-3.5 text-center">Max Difficulty</th>
+                    <th className="px-6 py-3.5 text-center">Min Difficulty</th>
+                    <th className="px-6 py-3.5 text-center">🔴 High Difficulty</th>
+                    <th className="px-6 py-3.5 text-center">🟡 Med Difficulty</th>
+                    <th className="px-6 py-3.5 text-center">🟢 Low Difficulty</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e5e7eb]">
@@ -305,10 +324,10 @@ export default function GovDashboardPage() {
         <section className="bg-white border border-[#e5e7eb] rounded-xl shadow-2xs p-6 sm:p-8 space-y-6">
           <div>
             <h2 className="text-xl font-bold text-[#111827] flex items-center gap-1.5">
-              <Sliders className="h-5 w-5 text-[#4f46e5]" /> LangChain policy risk sandbox
+              <Sliders className="h-5 w-5 text-[#4f46e5]" /> AI Search Difficulty Sandbox
             </h2>
             <p className="text-xs text-[#4b5563] mt-1">
-              Type custom concern descriptions in plain English. Sliders control the mathematical weights applied to standard parameters. A double Gemini prompt chain will parse, filter, and audit targeted policies!
+              Describe your concern in plain English. Adjust the weights below to see how they impact the difficulty ratings of different government schemes.
             </p>
           </div>
 
@@ -317,12 +336,12 @@ export default function GovDashboardPage() {
               
               {/* Sliders weighting inputs */}
               <div className="space-y-4 bg-[#f9fafb] p-5 rounded-lg border border-[#e5e7eb]">
-                <span className="block text-2xs font-bold uppercase tracking-wider text-[#9ca3af] mb-1">Standard Risk Weights Adjusters</span>
+                <span className="block text-2xs font-bold uppercase tracking-wider text-[#9ca3af] mb-1">Adjust Difficulty Factor Weights</span>
                 
                 {/* Slider 1 */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <label className="font-semibold">Accessibility Weight</label>
+                    <label className="font-semibold">Accessibility Barriers (Complex documents needed)</label>
                     <span className="font-mono text-2xs">{accWeight}</span>
                   </div>
                   <input 
@@ -335,7 +354,7 @@ export default function GovDashboardPage() {
                 {/* Slider 2 */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <label className="font-semibold">Bureaucratic Weight (Red Tape)</label>
+                    <label className="font-semibold">Bureaucracy & Red Tape (Long verification/inspection)</label>
                     <span className="font-mono text-2xs">{burWeight}</span>
                   </div>
                   <input 
@@ -348,7 +367,7 @@ export default function GovDashboardPage() {
                 {/* Slider 3 */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <label className="font-semibold">Market Distortion Weight (Dependency)</label>
+                    <label className="font-semibold">Market Dependency (Direct cash handouts)</label>
                     <span className="font-mono text-2xs">{marWeight}</span>
                   </div>
                   <input 
@@ -361,7 +380,7 @@ export default function GovDashboardPage() {
                 {/* Slider 4 */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <label className="font-semibold">Ecological Threat Weight</label>
+                    <label className="font-semibold">Environmental Impact</label>
                     <span className="font-mono text-2xs">{ecoWeight}</span>
                   </div>
                   <input 
@@ -374,7 +393,7 @@ export default function GovDashboardPage() {
                 {/* Slider 5 */}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <label className="font-semibold">Social Exclusion Weight</label>
+                    <label className="font-semibold">Social Exclusion (Targeted demographic filters)</label>
                     <span className="font-mono text-2xs">{socWeight}</span>
                   </div>
                   <input 
@@ -416,7 +435,7 @@ export default function GovDashboardPage() {
                       disabled={sandboxLoading}
                       className="w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-[#111827] hover:bg-[#1f2937] text-white py-2 text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
                     >
-                      {sandboxLoading ? 'Executing Audit...' : 'Audit Custom Policy Concerns'}
+                      {sandboxLoading ? 'Analyzing...' : 'Analyze Custom Concerns'}
                     </button>
                   </div>
                 </div>
@@ -442,7 +461,7 @@ export default function GovDashboardPage() {
               
               {/* Extracted search tags */}
               <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-3 text-xs leading-relaxed text-[#4b5563]">
-                <strong>Gemini extracted search tags:</strong> <code className="bg-white border px-1.5 py-0.5 rounded text-indigo-700 text-2xs font-bold tracking-wide ml-2">{extractedTags}</code>
+                <strong>AI Extracted Search Keywords:</strong> <code className="bg-white border px-1.5 py-0.5 rounded text-indigo-700 text-2xs font-bold tracking-wide ml-2">{extractedTags}</code>
               </div>
 
               <div className="space-y-4">
@@ -473,7 +492,7 @@ export default function GovDashboardPage() {
 
                       {/* Custom Justification Alert panel */}
                       <div className="bg-[#f9fafb] border border-[#f3f4f6] rounded-lg p-4 text-xs text-[#4b5563] leading-relaxed">
-                        <span className="block font-bold text-[#111827] text-2xs uppercase tracking-wider mb-1.5 text-[#4f46e5]">Policy Auditor Audit Rationale</span>
+                        <span className="block font-bold text-[#111827] text-2xs uppercase tracking-wider mb-1.5 text-[#4f46e5]">AI System Analysis & Reason</span>
                         <p>{scheme.justification}</p>
                       </div>
 
@@ -517,10 +536,10 @@ export default function GovDashboardPage() {
         <section className="space-y-6">
           <div>
             <h2 className="text-xl font-bold text-[#111827] flex items-center gap-1.5">
-              <BarChart3 className="h-5 w-5 text-[#4f46e5]" /> Top policy risky schemes browser
+              <BarChart3 className="h-5 w-5 text-[#4f46e5]" /> Search Schemes by Difficulty
             </h2>
             <p className="text-xs text-[#4b5563] mt-1">
-              Browse government schemes ordered from highest risk factors. Adjust sliders and categories to evaluate extreme systematic friction.
+              Browse schemes sorted by their difficulty score (highest first). Adjust filters below to change options.
             </p>
           </div>
 
@@ -540,7 +559,7 @@ export default function GovDashboardPage() {
 
             <div>
               <div className="flex items-center justify-between text-xs mb-2">
-                <label className="font-semibold">Minimum Composite Risk</label>
+                <label className="font-semibold">Minimum Difficulty Score</label>
                 <span className="font-mono text-2xs font-bold">{minRisk}</span>
               </div>
               <input 
@@ -567,7 +586,7 @@ export default function GovDashboardPage() {
                 disabled={browserLoading}
                 className="w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-[#111827] hover:bg-[#1f2937] text-white py-2 text-xs font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
               >
-                <Filter className="h-3.5 w-3.5" /> Apply Filter Conditions
+                <Filter className="h-3.5 w-3.5" /> Filter Schemes
               </button>
             </div>
           </div>

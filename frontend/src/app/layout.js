@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import PageLoader from "../components/PageLoader";
 import "./globals.css";
 
 const inter = Inter({
@@ -70,6 +71,7 @@ CLERK_SECRET_KEY=sk_test_...`}
     >
       <body className="min-h-full flex flex-col font-sans">
         <ClerkProvider publishableKey={publishableKey}>
+          <PageLoader />
           {children}
         </ClerkProvider>
       </body>

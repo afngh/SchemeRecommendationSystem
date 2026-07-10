@@ -17,7 +17,7 @@ app = FastAPI(
 # Enable CORS so our frontend can communicate with this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to the frontend URL
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -348,6 +348,7 @@ def custom_risk_sandbox(request: CustomRiskRequest):
                     google_api_key=GOOGLE_API_KEY,
                     temperature=0.2,
                     max_output_tokens=150,
+                    max_retries=0,
                 )
                 
                 tag_prompt_tmpl = ChatPromptTemplate.from_messages([

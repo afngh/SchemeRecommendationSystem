@@ -151,18 +151,32 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-[#f9fafb] text-[#111827]">
       {/* Top Navbar */}
-      <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm">
+      <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm relative z-10 font-sans">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
-              <Zap className="h-5 w-5 text-[#4f46e5]" />
-              <span className="text-lg font-bold tracking-tight">SchemeLens</span>
+          <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <Zap className="h-5 w-5 text-[#4f46e5]" />
+            <span className="text-lg font-bold tracking-tight">SchemeLens</span>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <Link href="/recommend" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Find Schemes
+            </Link>
+            <Link href="/gov/dashboard" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Government Dashboard
+            </Link>
+            <Link href="/top-rated" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Top Rated
+            </Link>
+            <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Alert Delivery
+            </Link>
+            <Link href="/profile" className="text-[#111827] font-semibold">
+              Preferences
             </Link>
           </div>
+
           <div className="flex items-center gap-4">
-            <Link href="/recommend" className="text-sm font-medium text-[#4b5563] hover:text-[#111827] transition-colors flex items-center gap-1">
-              <ArrowLeft className="h-4 w-4" /> Back to Recommendation
-            </Link>
             <UserButton afterSignOutUrl="/" />
           </div>
         </div>
@@ -176,10 +190,10 @@ export default function ProfilePage() {
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6 sm:p-8">
               <h2 className="text-2xl font-bold text-[#111827] mb-2 flex items-center gap-2">
-                Demographic Matching Profile
+                My Personal Details (For Matching)
               </h2>
               <p className="text-sm text-[#4b5563] mb-6">
-                Define your profile properties. These values are automatically used to match and prioritize government schemes in normal and premium smart searches.
+                Fill in your profile details below. These are used to automatically find and personalize matches for you.
               </p>
 
               {status.message && (
@@ -205,7 +219,7 @@ export default function ProfilePage() {
 
                   {/* Caste Category */}
                   <div>
-                    <label className="block text-sm font-semibold text-[#111827] mb-2">Social Category (Caste)</label>
+                    <label className="block text-sm font-semibold text-[#111827] mb-2">Caste Category</label>
                     <select
                       value={profile.caste}
                       onChange={(e) => setProfile({ ...profile, caste: e.target.value })}
@@ -235,7 +249,7 @@ export default function ProfilePage() {
 
                 {/* Occupation Chips */}
                 <div>
-                  <label className="block text-sm font-semibold text-[#111827] mb-2">Eligible Category Tags</label>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">Employment & Group Tags</label>
                   <p className="text-xs text-[#4b5563] mb-3">Select all matching categories that apply to you:</p>
                   <div className="flex flex-wrap gap-2">
                     {occupations.map(occ => {
@@ -263,7 +277,7 @@ export default function ProfilePage() {
                 {/* Delivery Settings */}
                 <div>
                   <h3 className="text-md font-semibold text-[#111827] mb-4 flex items-center gap-1.5">
-                    Omni-Channel Subscriptions
+                    Notification Subscriptions
                   </h3>
                   
                   <div className="space-y-4">
@@ -275,7 +289,7 @@ export default function ProfilePage() {
                         className="rounded border-[#e5e7eb] text-[#4f46e5] focus:ring-[#4f46e5] mt-1 h-4 w-4"
                       />
                       <div>
-                        <span className="text-sm font-semibold text-[#111827]">WhatsApp Eligibility Delivery</span>
+                        <span className="text-sm font-semibold text-[#111827]">Receive matches on WhatsApp</span>
                         <p className="text-xs text-[#4b5563]">Receive immediate application documents, updates and deadline reminders over WhatsApp.</p>
                       </div>
                     </label>
@@ -372,10 +386,10 @@ export default function ProfilePage() {
             {/* Platform Integrations Box */}
             <div className="bg-white rounded-xl shadow-sm border border-[#e5e7eb] p-6 space-y-4">
               <h3 className="text-md font-bold text-[#111827]">
-                Integrations & Access
+                More Options
               </h3>
               <p className="text-xs text-[#4b5563]">
-                Expand your discovery capabilities with background alerts and developer access endpoints.
+                Configure your alert configurations and notification services.
               </p>
               
               <div className="space-y-2 pt-2">
@@ -385,14 +399,6 @@ export default function ProfilePage() {
                 >
                   <span>Omnichannel Alert Delivery</span>
                   <span className="text-[10px] bg-indigo-50 text-[#4f46e5] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Configure</span>
-                </Link>
-                
-                <Link
-                  href="/developer"
-                  className="w-full inline-flex items-center justify-between rounded-md border border-[#e5e7eb] hover:border-[#111827] bg-[#f9fafb] hover:bg-white text-[#111827] px-4 py-2.5 text-xs font-semibold transition-all shadow-2xs"
-                >
-                  <span>Developer API Portal</span>
-                  <span className="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Access</span>
                 </Link>
               </div>
             </div>

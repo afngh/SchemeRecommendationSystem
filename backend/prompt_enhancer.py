@@ -87,6 +87,7 @@ IMPORTANT: Output ONLY the enhanced search context as a single paragraph. Nothin
             google_api_key=key,
             temperature=0.3,  # Low temperature for consistent, focused output
             max_output_tokens=200,
+            max_retries=0,
         )
 
         # Build the single LangChain chain

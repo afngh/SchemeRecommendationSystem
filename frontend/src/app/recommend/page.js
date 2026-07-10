@@ -3,7 +3,7 @@
 import { UserButton, useUser } from '@clerk/nextjs';
 import { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/utils/supabase';
-import { Zap, Search, Settings, Star, AlertTriangle, ArrowRight, ExternalLink, HelpCircle, Send } from 'lucide-react';
+import { Zap, Search, Settings, Star, AlertTriangle, ArrowRight, ExternalLink, HelpCircle, Send, Lock } from 'lucide-react';
 import Link from 'next/link';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://schemerecommendationsystem-production.up.railway.app';
@@ -13,6 +13,7 @@ export default function RecommendPage() {
   const [query, setQuery] = useState('');
   const [topK, setTopK] = useState(5);
   const [searchMode, setSearchMode] = useState('normal'); // 'normal' or 'smart'
+  const [showLockModal, setShowLockModal] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState([]);
@@ -86,6 +87,11 @@ export default function RecommendPage() {
     e.preventDefault();
     if (!query.trim()) return;
 
+    if (searchMode === 'smart' && !user) {
+      setShowLockModal(true);
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
@@ -105,6 +111,7 @@ export default function RecommendPage() {
         ? `${BACKEND_URL}/api/recommend/premium` 
         : `${BACKEND_URL}/api/recommend`;
 
+      const startTime = Date.now();
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -122,6 +129,13 @@ export default function RecommendPage() {
       }
 
       const data = await response.json();
+      
+      // Ensure loader runs for at least 450ms for smooth transitions
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < 450) {
+        await new Promise(resolve => setTimeout(resolve, 450 - elapsedTime));
+      }
+
       setResults(data.results || []);
       if (data.enhanced_query) {
         setEnhancedQuery(data.enhanced_query);
@@ -200,9 +214,6 @@ export default function RecommendPage() {
             </Link>
             <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
               Alert Delivery
-            </Link>
-            <Link href="/developer" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-              Developer Portal
             </Link>
             <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
               Preferences
@@ -290,7 +301,7 @@ export default function RecommendPage() {
                 
                 {/* Search Mode Toggles with Dynamic Colors */}
                 <div>
-                  <span className="block text-[10px] font-bold uppercase tracking-wider text-[#111827] mb-1.5">AI Matching Engine Mode</span>
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-[#111827] mb-1.5">Search Assistance Mode</span>
                   <div className="grid grid-cols-2 gap-1.5 bg-[#f3f4f6] p-1 rounded-lg border border-[#e5e7eb]">
                     <button
                       type="button"
@@ -301,18 +312,25 @@ export default function RecommendPage() {
                           : 'border-transparent text-[#4b5563] hover:text-[#111827] hover:bg-[#e5e7eb]/40'
                       }`}
                     >
-                      Normal Vector
+                      Basic Search
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSearchMode('smart')}
-                      className={`py-1.5 text-2xs font-semibold rounded-md text-center transition-all duration-200 border ${
+                      onClick={() => {
+                        if (!user) {
+                          setShowLockModal(true);
+                        } else {
+                          setSearchMode('smart');
+                        }
+                      }}
+                      className={`py-1.5 text-2xs font-semibold rounded-md text-center transition-all duration-200 border flex items-center justify-center gap-1.5 ${
                         searchMode === 'smart' 
                           ? 'bg-[#111827] text-white border-[#111827] shadow-sm' 
                           : 'border-transparent text-[#4b5563] hover:text-[#111827] hover:bg-[#e5e7eb]/40'
                       }`}
                     >
-                      Smart LLM Enhanced
+                      AI-Assisted Search (Recommended)
+                      {!user && <Lock className="h-3.5 w-3.5 text-[#6b7280]" />}
                     </button>
                   </div>
                   
@@ -321,12 +339,12 @@ export default function RecommendPage() {
                     {searchMode === 'smart' ? (
                       <>
                         <span className="h-1.5 w-1.5 rounded-full bg-[#111827]"></span>
-                        <span>Using Gemini Flash 2.0 query keywords expansion.</span>
+                        <span>Using Google AI to find related words and hidden matches.</span>
                       </>
                     ) : (
                       <>
                         <span className="h-1.5 w-1.5 rounded-full bg-gray-400"></span>
-                        <span>Using classic FAISS Dense Passage Retrieval vector search.</span>
+                        <span>Using standard keywords and description matching.</span>
                       </>
                     )}
                   </p>
@@ -334,7 +352,7 @@ export default function RecommendPage() {
 
                 {/* top_k Limit Selector */}
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#111827] mb-1.5">Limit Schemes (top_k)</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#111827] mb-1.5">Number of Results to Show</label>
                   <select
                     value={topK}
                     onChange={(e) => setTopK(e.target.value)}
@@ -355,7 +373,7 @@ export default function RecommendPage() {
                   disabled={loading}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-md bg-[#111827] hover:bg-[#1f2937] text-white px-6 py-2.5 text-sm font-semibold transition-all disabled:opacity-50 cursor-pointer shadow-sm"
                 >
-                  {loading ? 'Running AI Match...' : 'Find Matching Welfare Schemes'}
+                  {loading ? 'Searching...' : 'Search for Schemes'}
                 </button>
               </div>
 
@@ -383,10 +401,10 @@ export default function RecommendPage() {
             {enhancedQuery && (
               <div className="bg-indigo-50/50 border border-indigo-100 rounded-lg p-4 space-y-2">
                 <h4 className="text-2xs font-bold text-[#4f46e5] uppercase tracking-wider flex items-center gap-1.5">
-                  ✦ Google Gemini LLM Smart Query Enrichment
+                  ✦ AI Search Help (Enriched Search Terms)
                 </h4>
                 <p className="text-xs text-[#4b5563] leading-relaxed">
-                  Our LLM analyzed your prompt and automatically generated enriched policy semantic match descriptors:
+                  The AI analyzed your search and looked up these related terms for you:
                 </p>
                 <pre className="bg-white text-xs text-[#111827] p-3 rounded border border-indigo-100 overflow-x-auto whitespace-pre-wrap leading-relaxed font-sans mt-2">
                   {enhancedQuery}
@@ -521,7 +539,7 @@ export default function RecommendPage() {
                             }}
                             className="inline-flex items-center gap-1.5 text-2xs font-medium text-[#4b5563] hover:text-[#4f46e5] transition-colors"
                           >
-                            <Star className="h-4 w-4" /> Rate matching accuracy
+                            <Star className="h-4 w-4" /> Was this search result relevant?
                           </button>
                         )}
                       </div>
@@ -565,6 +583,43 @@ export default function RecommendPage() {
       <footer className="border-t border-[#e5e7eb] bg-white px-4 py-6 text-center text-xs text-[#4b5563]">
         <p>© 2026 SchemeLens AI Recommendation System. Powered by real Government Scrapes.</p>
       </footer>
+
+      {/* AI Lock Modal */}
+      {showLockModal && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 transition-all duration-300">
+          <div className="bg-white rounded-xl border border-[#e5e7eb] p-6 max-w-sm w-full text-center space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="h-12 w-12 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto text-[#4f46e5]">
+              <Lock className="h-5 w-5" />
+            </div>
+            
+            <div className="space-y-1">
+              <h3 className="text-md font-bold text-[#111827]">Unlock AI-Assisted Search</h3>
+              <p className="text-xs text-[#4b5563] leading-relaxed">
+                AI search uses Google Gemini models to enhance your search queries, find matching policy synonyms, and unlock personalized recommendations.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 pt-2">
+              <Link
+                href="/sign-in"
+                className="w-full inline-flex items-center justify-center rounded-md bg-[#111827] hover:bg-[#1f2937] text-white py-2 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+              >
+                Log In or Register
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchMode('normal');
+                  setShowLockModal(false);
+                }}
+                className="w-full inline-flex items-center justify-center rounded-md border border-[#e5e7eb] hover:bg-gray-50 text-[#374151] py-2 text-xs font-semibold transition-all cursor-pointer"
+              >
+                Continue with Basic Search
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

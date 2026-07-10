@@ -18,6 +18,7 @@ export default function TopRatedPage() {
       try {
         setLoading(true);
         setError('');
+        const startTime = Date.now();
         const response = await fetch(`${BACKEND_URL}/api/top-rated?limit=15`);
         
         if (!response.ok) {
@@ -25,6 +26,13 @@ export default function TopRatedPage() {
         }
 
         const data = await response.json();
+
+        // Ensure loading state runs for at least 450ms for smooth transitions
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime < 450) {
+          await new Promise(resolve => setTimeout(resolve, 450 - elapsedTime));
+        }
+
         setSchemes(data.top_rated || []);
       } catch (err) {
         console.error('Error fetching top rated schemes:', err);
@@ -41,34 +49,29 @@ export default function TopRatedPage() {
     <div className="min-h-screen flex flex-col bg-[#f9fafb] text-[#111827]">
       
       {/* Top Navbar */}
-      <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm">
+      <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm relative z-10 font-sans">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
-              <Zap className="h-5 w-5 text-[#4f46e5]" />
-              <span className="text-lg font-bold tracking-tight">SchemeLens</span>
+          <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <Zap className="h-5 w-5 text-[#4f46e5]" />
+            <span className="text-lg font-bold tracking-tight">SchemeLens</span>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <Link href="/recommend" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Find Schemes
             </Link>
-            
-            <div className="hidden md:flex items-center gap-6 text-sm font-medium ml-4">
-              <Link href="/recommend" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Find Schemes
-              </Link>
-              <Link href="/gov/dashboard" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Government Dashboard
-              </Link>
-              <Link href="/top-rated" className="text-[#111827] font-semibold">
-                Top Rated
-              </Link>
-              <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Alert Delivery
-              </Link>
-              <Link href="/developer" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Developer Portal
-              </Link>
-              <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
-                Preferences
-              </Link>
-            </div>
+            <Link href="/gov/dashboard" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Government Dashboard
+            </Link>
+            <Link href="/top-rated" className="text-[#111827] font-semibold">
+              Top Rated
+            </Link>
+            <Link href="/delivery" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Alert Delivery
+            </Link>
+            <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Preferences
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">

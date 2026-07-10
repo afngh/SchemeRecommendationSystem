@@ -186,19 +186,33 @@ export default function DeliveryPage() {
   return (
     <div className="min-h-screen bg-[#f9fafb] text-[#111827] flex flex-col font-sans">
       
-      {/* Navbar Header */}
-      <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm">
+      {/* Top Navbar */}
+      <header className="border-b border-[#e5e7eb] bg-white px-4 py-4 sm:px-6 lg:px-8 shadow-sm relative z-10 font-sans">
         <div className="mx-auto max-w-7xl flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
-              <Zap className="h-5 w-5 text-[#4f46e5]" />
-              <span className="text-lg font-bold tracking-tight">SchemeLens</span>
+          <Link href="/" className="inline-flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <Zap className="h-5 w-5 text-[#4f46e5]" />
+            <span className="text-lg font-bold tracking-tight">SchemeLens</span>
+          </Link>
+          
+          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <Link href="/recommend" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Find Schemes
+            </Link>
+            <Link href="/gov/dashboard" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Government Dashboard
+            </Link>
+            <Link href="/top-rated" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Top Rated
+            </Link>
+            <Link href="/delivery" className="text-[#111827] font-semibold">
+              Alert Delivery
+            </Link>
+            <Link href="/profile" className="text-[#4b5563] hover:text-[#111827] transition-colors">
+              Preferences
             </Link>
           </div>
+
           <div className="flex items-center gap-4">
-            <Link href="/recommend" className="text-sm font-medium text-[#4b5563] hover:text-[#111827] transition-colors flex items-center gap-1">
-              <ArrowLeft className="h-4 w-4" /> Back to Search
-            </Link>
             <UserButton afterSignOutUrl="/" />
           </div>
         </div>
@@ -209,8 +223,8 @@ export default function DeliveryPage() {
         
         {/* Title */}
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-[#111827]">Get Delivered Omnichannel Services</h1>
-          <p className="text-xs text-[#4b5563] mt-1">Configure automated notifications and sync eligibility matches directly to active messengers or custom automation flows.</p>
+          <h1 className="text-2xl font-extrabold tracking-tight text-[#111827]">Receive Automated Notifications</h1>
+          <p className="text-xs text-[#4b5563] mt-1">Set up notifications to get matched schemes sent directly to your phone or messenger.</p>
         </div>
 
         {/* Status Alerts */}
@@ -234,8 +248,8 @@ export default function DeliveryPage() {
                     <MessageSquare className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#111827]">WhatsApp Delivery (Twilio Powered)</h3>
-                    <p className="text-3xs text-[#4b5563]">Deliver PDF match documents and application deadlines directly via WhatsApp.</p>
+                    <h3 className="text-sm font-bold text-[#111827]">Receive matches on WhatsApp</h3>
+                    <p className="text-3xs text-[#4b5563]">Get PDF documents and application deadlines sent straight to your WhatsApp.</p>
                   </div>
                 </div>
 
@@ -248,14 +262,14 @@ export default function DeliveryPage() {
                       className="rounded border-[#e5e7eb] text-[#4f46e5] focus:ring-[#4f46e5] mt-1 h-4 w-4"
                     />
                     <div>
-                      <span className="text-xs font-semibold text-[#111827]">Enable WhatsApp Alerts</span>
-                      <p className="text-3xs text-[#4b5563]">Toggle to receive dynamic matching notifications instantly.</p>
+                      <span className="text-xs font-semibold text-[#111827]">Enable WhatsApp Notifications</span>
+                      <p className="text-3xs text-[#4b5563]">Get matching alerts sent to your phone immediately.</p>
                     </div>
                   </label>
 
                   {whatsappEnabled && (
                     <div className="pl-7 max-w-md">
-                      <label className="block text-3xs font-bold text-[#111827] uppercase tracking-wider mb-2">WhatsApp Number (with country code)</label>
+                      <label className="block text-3xs font-bold text-[#111827] uppercase tracking-wider mb-2">WhatsApp Number (Include Country Code, e.g. +91)</label>
                       <input
                         type="text"
                         value={whatsappNumber}
@@ -275,8 +289,8 @@ export default function DeliveryPage() {
                     <Send className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#111827]">Telegram Bot Notification Bot</h3>
-                    <p className="text-3xs text-[#4b5563]">Connect with @SchemeLensBot for interactive verification and scheme downloads.</p>
+                    <h3 className="text-sm font-bold text-[#111827]">Receive matches on Telegram</h3>
+                    <p className="text-3xs text-[#4b5563]">Connect to our Telegram bot to verify your account and download schemes.</p>
                   </div>
                 </div>
 
@@ -289,15 +303,15 @@ export default function DeliveryPage() {
                       className="rounded border-[#e5e7eb] text-[#4f46e5] focus:ring-[#4f46e5] mt-1 h-4 w-4"
                     />
                     <div>
-                      <span className="text-xs font-semibold text-[#111827]">Enable Telegram Delivery</span>
-                      <p className="text-3xs text-[#4b5563]">Sync alerts dynamically over encrypted Telegram notifications.</p>
+                      <span className="text-xs font-semibold text-[#111827]">Enable Telegram Notifications</span>
+                      <p className="text-3xs text-[#4b5563]">Get updates sent directly to your Telegram chat.</p>
                     </div>
                   </label>
 
                   {telegramEnabled && (
                     <div className="pl-7 space-y-4 max-w-md">
                       <div>
-                        <label className="block text-3xs font-bold text-[#111827] uppercase tracking-wider mb-2">Telegram Chat ID / Connection Token</label>
+                        <label className="block text-3xs font-bold text-[#111827] uppercase tracking-wider mb-2">Telegram Chat ID</label>
                         <div className="flex gap-2">
                           <input
                             type="text"
@@ -336,8 +350,8 @@ export default function DeliveryPage() {
                     <Mail className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-[#111827]">Email Alerts Digests</h3>
-                    <p className="text-3xs text-[#4b5563]">Receive weekly digest summaries of newly published schemes matching your exact profile.</p>
+                    <h3 className="text-sm font-bold text-[#111827]">Receive matches via Email</h3>
+                    <p className="text-3xs text-[#4b5563]">Receive a weekly email summary of new schemes matching your profile.</p>
                   </div>
                 </div>
 
@@ -365,7 +379,7 @@ export default function DeliveryPage() {
                   className="inline-flex items-center gap-2 rounded-md bg-[#111827] hover:bg-[#1f2937] text-white px-6 py-2.5 text-sm font-semibold transition-all shadow-sm cursor-pointer"
                 >
                   <RefreshCw className={`h-4 w-4 ${saving ? 'animate-spin' : ''}`} />
-                  {saving ? 'Saving...' : 'Save Delivery Configuration'}
+                  {saving ? 'Saving...' : 'Save Notification Settings'}
                 </button>
               </div>
 
@@ -380,14 +394,14 @@ export default function DeliveryPage() {
                   <SendToBack className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#111827]">n8n Automation</h3>
-                  <p className="text-3xs text-[#4b5563]">Connect custom n8n triggers.</p>
+                  <h3 className="text-sm font-bold text-[#111827]">Custom Automation Webhook</h3>
+                  <p className="text-3xs text-[#4b5563]">Send matching alerts to your custom webhook URL.</p>
                 </div>
               </div>
 
               <div className="space-y-4 pt-2">
                 <div>
-                  <label className="block text-3xs font-bold text-[#111827] uppercase tracking-wider mb-2">n8n webhook endpoint URL</label>
+                  <label className="block text-3xs font-bold text-[#111827] uppercase tracking-wider mb-2">Webhook Endpoint URL</label>
                   <input
                     type="text"
                     value={n8nWebhookUrl}
@@ -404,7 +418,7 @@ export default function DeliveryPage() {
                   className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-[#e5e7eb] bg-white hover:bg-[#f9fafb] text-[#111827] py-2 text-xs font-semibold transition-all shadow-2xs cursor-pointer"
                 >
                   <Play className="h-3.5 w-3.5 text-orange-500" />
-                  {testLoading ? 'Triggering...' : 'Trigger Test Delivery'}
+                  {testLoading ? 'Sending...' : 'Send Test Message'}
                 </button>
 
                 {/* Webhook Status Alert */}
