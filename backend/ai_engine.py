@@ -4,7 +4,14 @@ import numpy as np
 import os
 import pickle
 from sentence_transformers import SentenceTransformer
-import faiss
+
+# Try importing FAISS; fall back to NumPy vector search if blocked by Windows Application Control or DLL errors
+try:
+    import faiss
+    FAISS_AVAILABLE = True
+except Exception as e:
+    FAISS_AVAILABLE = False
+    print(f"[Notice] FAISS unavailable ({e}). Using native NumPy vector search.")
 
 # Prompt Enhancer (Gemini + LangChain)
 try:
@@ -22,6 +29,7 @@ else:
 
 DB_PATH = os.path.join(DATA_DIR, 'schemelens.db')
 FAISS_INDEX_PATH = os.path.join(DATA_DIR, 'scheme_index.faiss')
+NUMPY_EMBEDDINGS_PATH = os.path.join(DATA_DIR, 'scheme_embeddings.npy')
 ID_MAPPING_PATH = os.path.join(DATA_DIR, 'scheme_id_mapping.pkl')
 # Using a fast, lightweight, and highly accurate embedding model
 MODEL_NAME = 'all-MiniLM-L6-v2' 
@@ -31,6 +39,7 @@ class AIEngine:
         print(f"Loading NLP model '{MODEL_NAME}'... (This might take a moment the first time)")
         self.model = SentenceTransformer(MODEL_NAME)
         self.index = None
+        self.embeddings = None
         self.id_mapping = None
 
         # Initialize the Groq Prompt Enhancer
@@ -51,7 +60,7 @@ class AIEngine:
     def build_vector_db(self):
         """
         Reads all schemes from the database, generates AI embeddings, 
-        and builds the FAISS vector database.
+        and builds the vector database (FAISS index or NumPy matrix).
         """
         print("Fetching schemes from the database...")
         conn = self._get_db_connection()
@@ -72,21 +81,26 @@ class AIEngine:
 
         # Generate embeddings (this converts the text into mathematical vectors)
         embeddings = self.model.encode(sentences, show_progress_bar=True)
+        float_embeddings = np.array(embeddings).astype('float32')
+        self.embeddings = float_embeddings
         
-        # Initialize FAISS Index
-        # The all-MiniLM-L6-v2 model outputs vectors of size 384
-        dimension = embeddings.shape[1]
-        self.index = faiss.IndexFlatL2(dimension)
+        # Always save NumPy embeddings array
+        np.save(NUMPY_EMBEDDINGS_PATH, float_embeddings)
+
+        # Initialize FAISS Index if FAISS is available
+        if FAISS_AVAILABLE:
+            dimension = float_embeddings.shape[1]
+            self.index = faiss.IndexFlatL2(dimension)
+            self.index.add(float_embeddings)
+            try:
+                faiss.write_index(self.index, FAISS_INDEX_PATH)
+            except Exception as e:
+                print(f"[Warning] Could not save FAISS index file: {e}")
         
-        # Add the vectors to the FAISS index
-        self.index.add(np.array(embeddings).astype('float32'))
-        
-        # Save the mapping of FAISS row IDs to our actual Scheme_IDs
+        # Save the mapping of row IDs to our actual Scheme_IDs
         self.id_mapping = {i: row['scheme_id'] for i, row in df.iterrows()}
         
-        # Save everything to disk so we don't have to recompute this every time
         print("Saving the Vector Database to disk...")
-        faiss.write_index(self.index, FAISS_INDEX_PATH)
         with open(ID_MAPPING_PATH, 'wb') as f:
             pickle.dump(self.id_mapping, f)
             
@@ -94,15 +108,38 @@ class AIEngine:
 
     def load_vector_db(self):
         """
-        Loads the pre-built FAISS index and ID mapping from disk.
+        Loads the pre-built index / embeddings and ID mapping from disk.
         """
-        if not os.path.exists(FAISS_INDEX_PATH) or not os.path.exists(ID_MAPPING_PATH):
+        has_faiss_file = os.path.exists(FAISS_INDEX_PATH)
+        has_npy_file = os.path.exists(NUMPY_EMBEDDINGS_PATH)
+        has_mapping = os.path.exists(ID_MAPPING_PATH)
+
+        if (not has_faiss_file and not has_npy_file) or not has_mapping:
             print("Vector database not found. Building it now...")
             self.build_vector_db()
-        else:
-            self.index = faiss.read_index(FAISS_INDEX_PATH)
-            with open(ID_MAPPING_PATH, 'rb') as f:
-                self.id_mapping = pickle.load(f)
+            return
+
+        # Load ID mapping
+        with open(ID_MAPPING_PATH, 'rb') as f:
+            self.id_mapping = pickle.load(f)
+
+        # Load FAISS index if available, else load NumPy embeddings
+        if FAISS_AVAILABLE and has_faiss_file:
+            try:
+                self.index = faiss.read_index(FAISS_INDEX_PATH)
+            except Exception as e:
+                print(f"[Warning] Failed loading FAISS index: {e}. Falling back to NumPy.")
+                self.index = None
+
+        if os.path.exists(NUMPY_EMBEDDINGS_PATH):
+            self.embeddings = np.load(NUMPY_EMBEDDINGS_PATH)
+        elif self.index is not None and hasattr(self.index, 'reconstruct_n'):
+            # Reconstruct embeddings from FAISS index if npy doesn't exist
+            self.embeddings = np.array([self.index.reconstruct(i) for i in range(self.index.ntotal)])
+
+        if self.index is None and self.embeddings is None:
+            print("Rebuilding vector database...")
+            self.build_vector_db()
 
     def recommend_schemes(self, user_query, top_k=5, enhanced_query=None):
         """
@@ -114,7 +151,7 @@ class AIEngine:
             top_k: Number of results to return.
             enhanced_query: Pre-enhanced query from the API layer (avoids double enhancement).
         """
-        if self.index is None or self.id_mapping is None:
+        if (self.index is None and self.embeddings is None) or self.id_mapping is None:
             self.load_vector_db()
 
         print(f"\nAnalyzing user query: '{user_query}'...")
@@ -129,10 +166,19 @@ class AIEngine:
             search_query = user_query
 
         # Convert the (enhanced) query into a vector for semantic search
-        query_vector = self.model.encode([search_query])
-        
-        # Search the FAISS index for the closest matching scheme vectors
-        distances, indices = self.index.search(np.array(query_vector).astype('float32'), top_k)
+        query_vector = self.model.encode([search_query]).astype('float32')
+
+        if FAISS_AVAILABLE and self.index is not None:
+            distances, indices = self.index.search(query_vector, top_k)
+        elif self.embeddings is not None:
+            # NumPy vector search using L2 distance squared
+            diffs = self.embeddings - query_vector
+            dists = np.sum(diffs ** 2, axis=1)
+            sorted_indices = np.argsort(dists)[:top_k]
+            distances = np.array([dists[sorted_indices]])
+            indices = np.array([sorted_indices])
+        else:
+            return []
         
         # Retrieve the matched Scheme IDs & map distances
         matched_scheme_ids = []
@@ -179,11 +225,18 @@ class AIEngine:
         return ordered_results
 
 if __name__ == "__main__":
+    import sys
+    if sys.platform == "win32":
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
     # Test the AI Engine
     engine = AIEngine()
     
     # Check if we need to build the DB
-    if not os.path.exists(FAISS_INDEX_PATH):
+    if not os.path.exists(FAISS_INDEX_PATH) and not os.path.exists(NUMPY_EMBEDDINGS_PATH):
         engine.build_vector_db()
         
     # Let's run a test query
@@ -198,4 +251,7 @@ if __name__ == "__main__":
         print(f"\n{i}. {scheme['title']}")
         print(f"Category: {scheme['category']}")
         print(f"Link: {scheme['link']}")
-        print(f"Description: {scheme['description'][:150]}...")
+        safe_desc = scheme['description'][:150].encode('ascii', 'ignore').decode('ascii')
+        print(f"Description: {safe_desc}...")
+
+
