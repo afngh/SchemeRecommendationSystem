@@ -15,10 +15,10 @@ except ImportError:
 
 # Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-if os.path.exists(os.path.join(BASE_DIR, '..', 'data')):
-    DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
-else:
+if os.path.exists(os.path.join(BASE_DIR, 'data')):
     DATA_DIR = os.path.join(BASE_DIR, 'data')
+else:
+    DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
 
 DB_PATH = os.path.join(DATA_DIR, 'schemelens.db')
 FAISS_INDEX_PATH = os.path.join(DATA_DIR, 'scheme_index.faiss')
@@ -33,14 +33,14 @@ class AIEngine:
         self.index = None
         self.id_mapping = None
 
-        # Initialize the Gemini Prompt Enhancer
+        # Initialize the Groq Prompt Enhancer
         self.enhancer = None
         if ENHANCER_AVAILABLE:
             try:
                 self.enhancer = PromptEnhancer()
-                print("✅ Gemini Prompt Enhancer loaded successfully.")
+                print("[OK] Groq API Prompt Enhancer loaded successfully.")
             except Exception as e:
-                print(f"⚠️  Prompt Enhancer not available ({e}). Using raw queries.")
+                print(f"[Warning] Groq Prompt Enhancer not available ({e}). Using raw queries.")
                 self.enhancer = None
 
     def _get_db_connection(self):
@@ -134,8 +134,24 @@ class AIEngine:
         # Search the FAISS index for the closest matching scheme vectors
         distances, indices = self.index.search(np.array(query_vector).astype('float32'), top_k)
         
-        # Retrieve the matched Scheme IDs
-        matched_scheme_ids = [self.id_mapping[idx] for idx in indices[0] if idx != -1]
+        # Retrieve the matched Scheme IDs & map distances
+        matched_scheme_ids = []
+        score_map = {}
+        for pos, idx in enumerate(indices[0]):
+            if idx == -1:
+                continue
+            idx_int = int(idx)
+            sid = None
+            if idx_int in self.id_mapping:
+                sid = self.id_mapping[idx_int]
+            elif str(idx_int) in self.id_mapping:
+                sid = self.id_mapping[str(idx_int)]
+            elif idx in self.id_mapping:
+                sid = self.id_mapping[idx]
+            
+            if sid and sid not in score_map:
+                matched_scheme_ids.append(sid)
+                score_map[sid] = float(distances[0][pos])
         
         if not matched_scheme_ids:
             return []
@@ -151,9 +167,14 @@ class AIEngine:
         conn.close()
         
         # The database might not return them in the exact order of relevance,
-        # so we re-sort them based on the FAISS ranking order
+        # so we re-sort them based on the FAISS ranking order and attach similarity score
         result_dict = {row['scheme_id']: dict(row) for row in results}
-        ordered_results = [result_dict[sid] for sid in matched_scheme_ids if sid in result_dict]
+        ordered_results = []
+        for sid in matched_scheme_ids:
+            if sid in result_dict:
+                item = result_dict[sid]
+                item['score'] = score_map.get(sid, 0.5)
+                ordered_results.append(item)
         
         return ordered_results
 

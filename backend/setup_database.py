@@ -103,6 +103,30 @@ def setup_database(df):
         FOREIGN KEY (scheme_id) REFERENCES schemes(scheme_id)
     )
     ''')
+
+    # Create users table for FastAPI JWT auth
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE,
+        password_hash TEXT,
+        mobile TEXT UNIQUE,
+        district TEXT,
+        mandal TEXT,
+        secretariat TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    # Create otps table for Mobile OTP authentication
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS otps (
+        mobile TEXT PRIMARY KEY,
+        otp_code TEXT NOT NULL,
+        expires_at REAL NOT NULL
+    )
+    ''')
     
     # Clear existing schemes data so we don't have duplicates if run multiple times
     cursor.execute('DELETE FROM schemes')
